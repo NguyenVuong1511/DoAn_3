@@ -1,4 +1,4 @@
-# ĐỒ ÁN 3: XÂY DỰNG WEBSITE TUYỂN DỤNG VÀ TÌM VIỆC LÀM
+# XÂY DỰNG WEBSITE TUYỂN DỤNG VÀ TÌM VIỆC LÀM
 
 ## 📝 Mô tả nghiệp vụ hệ thống (Business Logic)
 
