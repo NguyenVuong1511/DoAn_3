@@ -1,5 +1,19 @@
 {
   "Routes": [
+    // 1. Tuyến đường dành cho IdentityService (Đăng ký, Đăng nhập)
+    {
+      "DownstreamPathTemplate": "/api/auth/{catchAll}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7201 // <-- THAY BẰNG CỔNG CỦA IDENTITY SERVICE
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/auth/{catchAll}",
+      "UpstreamHttpMethod": [ "Post" ]
+    },
+    // 2. Tuyến đường dành cho JobService (Các nghiệp vụ còn lại)
     {
       "DownstreamPathTemplate": "/{catchAll}",
       "DownstreamScheme": "https",
@@ -14,6 +28,6 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:5000"
+    "BaseUrl": "https://localhost:7255"
   }
 }
