@@ -10,6 +10,9 @@ namespace IdentityService
 
             builder.Services.AddControllers();
 
+            builder.Services.AddScoped<Services.TokenGenerator>();
+            builder.Services.AddScoped<Repositories.UserRepository>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
