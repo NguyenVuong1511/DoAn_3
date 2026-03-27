@@ -64,7 +64,7 @@
   }
 }
 
-body {
+/* body {
   margin: 0;
 }
 
@@ -72,7 +72,6 @@ h1,
 h2 {
   font-family: var(--heading);
   font-weight: 500;
-  color: var(--text-h);
 }
 
 h1 {
@@ -114,4 +113,4 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
-}
+} */

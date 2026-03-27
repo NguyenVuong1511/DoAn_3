@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { Eye, EyeOff, User, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, ArrowRight, ArrowBigLeft, Building2, Globe, MapPin, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const inputClass = "w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all";
+const labelClass = "block text-xs font-semibold text-gray-600 mb-1.5";
 
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const navigate = useNavigate();
   const [role, setRole] = useState<'candidate' | 'employer'>('candidate');
 
   return (
@@ -50,10 +55,12 @@ const RegisterPage = () => {
           {/* Center content */}
           <div className="z-10">
             <h2 className="text-3xl font-black text-white leading-tight mb-4">
-              Chào mừng bạn<br />đến với UpWork
+              {role === 'employer' ? <>Tìm kiếm<br />nhân tài!</> : <>Chào mừng bạn<br />đến với UpWork</>}
             </h2>
             <p className="text-white/70 text-sm leading-relaxed">
-              Cùng xây dựng một hồ sơ nổi bật và nhận được các cơ hội sự nghiệp lý tưởng dành cho bạn.
+              {role === 'employer'
+                ? 'Đăng tin tuyển dụng, quản lý hồ sơ ứng viên và xây dựng đội ngũ vững mạnh cho doanh nghiệp.'
+                : 'Cùng xây dựng một hồ sơ nổi bật và nhận được các cơ hội sự nghiệp lý tưởng dành cho bạn.'}
             </p>
           </div>
 
@@ -62,7 +69,11 @@ const RegisterPage = () => {
         </div>
 
         {/* Right Panel - Form */}
-        <div className="flex-1 bg-white p-8 sm:p-10 overflow-y-auto">
+        <div className="flex-1 bg-white p-8 sm:p-10">
+          <button onClick={() => navigate("/")} className='flex items-center gap-2 text-sm text-indigo-600 font-semibold hover:underline mb-3'>
+            <ArrowBigLeft size={15} />Trang chủ
+          </button>
+
           {/* Mobile Logo */}
           <div className="flex flex-col mb-6 lg:hidden">
             <div className="text-[26px] font-black tracking-tighter text-gray-800 leading-none">
@@ -79,8 +90,8 @@ const RegisterPage = () => {
             <button
               onClick={() => setRole('candidate')}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${role === 'candidate'
-                  ? 'bg-white text-indigo-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               Ứng viên
@@ -88,8 +99,8 @@ const RegisterPage = () => {
             <button
               onClick={() => setRole('employer')}
               className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${role === 'employer'
-                  ? 'bg-white text-indigo-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               Nhà tuyển dụng
@@ -97,70 +108,119 @@ const RegisterPage = () => {
           </div>
 
           <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-            {/* Full Name */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Họ và tên</label>
-              <div className="relative">
-                <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Nhập họ tên"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
-                />
+
+            {/* ── Thông tin tài khoản ── */}
+            <div className="space-y-4">
+              {/* Full Name */}
+              <div>
+                <label className={labelClass}>Họ và tên</label>
+                <div className="relative">
+                  <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input type="text" placeholder="Nhập họ tên" className={inputClass} />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className={labelClass}>Email</label>
+                <div className="relative">
+                  <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input type="email" placeholder="Nhập email" className={inputClass} />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className={labelClass}>Mật khẩu</label>
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Nhập mật khẩu"
+                    className={inputClass}
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label className={labelClass}>Xác nhận mật khẩu</label>
+                <div className="relative">
+                  <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type={showConfirm ? 'text' : 'password'}
+                    placeholder="Nhập lại mật khẩu"
+                    className={inputClass}
+                  />
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Email</label>
-              <div className="relative">
-                <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="email"
-                  placeholder="Nhập email"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
-                />
-              </div>
-            </div>
+            {/* ── Thông tin Nhà tuyển dụng (chỉ hiện khi chọn employer) ── */}
+            {role === 'employer' && (
+              <div className="space-y-4 pt-2">
+                {/* Divider */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-indigo-100" />
+                  <span className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">Thông tin công ty</span>
+                  <div className="flex-1 h-px bg-indigo-100" />
+                </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Mật khẩu</label>
-              <div className="relative">
-                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Nhập mật khẩu"
-                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
+                {/* Company Name */}
+                <div>
+                  <label className={labelClass}>Tên công ty <span className="text-red-400">*</span></label>
+                  <div className="relative">
+                    <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="text" placeholder="Nhập tên công ty" className={inputClass} />
+                  </div>
+                </div>
 
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Xác nhận mật khẩu</label>
-              <div className="relative">
-                <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type={showConfirm ? 'text' : 'password'}
-                  placeholder="Nhập lại mật khẩu"
-                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
-                />
-                <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
+                {/* Address */}
+                <div>
+                  <label className={labelClass}>Địa chỉ công ty</label>
+                  <div className="relative">
+                    <MapPin size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="text" placeholder="Nhập địa chỉ" className={inputClass} />
+                  </div>
+                </div>
+
+                {/* Website */}
+                <div>
+                  <label className={labelClass}>Website công ty</label>
+                  <div className="relative">
+                    <Globe size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input type="url" placeholder="https://congty.com" className={inputClass} />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className={labelClass}>Mô tả công ty</label>
+                  <div className="relative">
+                    <FileText size={15} className="absolute left-3.5 top-3.5 text-gray-400" />
+                    <textarea
+                      rows={3}
+                      placeholder="Giới thiệu ngắn về công ty..."
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all resize-none"
+                    />
+                  </div>
+                </div>
+
+
               </div>
-            </div>
+            )}
 
             {/* Terms */}
             <label className="flex items-start gap-2.5 cursor-pointer group">
               <div
                 onClick={() => setAgreed(!agreed)}
-                className={`mt-0.5 w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${agreed ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 group-hover:border-indigo-400'
-                  }`}
+                className={`mt-0.5 w-4 h-4 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${agreed ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 group-hover:border-indigo-400'}`}
               >
                 {agreed && (
                   <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
