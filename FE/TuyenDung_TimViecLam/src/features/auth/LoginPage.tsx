@@ -1,11 +1,43 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, ArrowBigLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, ArrowBigLeft, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { loginApi } from '../../services/authService';
 
 const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    // Validate phía client
+    if (!email.trim()) return setError('Vui lòng nhập email.');
+    if (!password) return setError('Vui lòng nhập mật khẩu.');
+
+    setLoading(true);
+    try {
+      const user = await loginApi({ email: email.trim(), password });
+
+      // Điều hướng theo role
+      if (user.role === 'employer') {
+        navigate('/employer/dashboard');
+      } else if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Đăng nhập thất bại. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50 flex items-center justify-center p-4">
@@ -63,7 +95,10 @@ const LoginPage = () => {
 
         {/* Right Panel - Form */}
         <div className="flex-1 bg-white p-8 sm:p-12 flex flex-col justify-center">
-          <button onClick={() => navigate("/")} className='flex items-center gap-2 text-sm text-indigo-600 font-semibold hover:underline mb-3'><ArrowBigLeft size={15} />Trang chủ</button>
+          <button onClick={() => navigate("/")} className='flex items-center gap-2 text-sm text-indigo-600 font-semibold hover:underline mb-3'>
+            <ArrowBigLeft size={15} />Trang chủ
+          </button>
+
           {/* Mobile Logo */}
           <div className="flex flex-col mb-6 lg:hidden">
             <div className="text-[26px] font-black tracking-tighter text-gray-800 leading-none">
@@ -72,11 +107,18 @@ const LoginPage = () => {
             <span className="text-[9px] text-gray-500 font-medium mt-0.5">Tiếp lợi thế - Nối thành công</span>
           </div>
 
-
           <h1 className="text-2xl font-black text-gray-800 mb-1">Đăng nhập</h1>
           <p className="text-sm text-gray-500 mb-8">Chào mừng bạn quay trở lại UpWork</p>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          {/* Error banner */}
+          {error && (
+            <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2">
+              <span className="shrink-0">⚠️</span>
+              {error}
+            </div>
+          )}
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Email */}
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">Email</label>
@@ -85,7 +127,10 @@ const LoginPage = () => {
                 <input
                   type="email"
                   placeholder="Nhập email của bạn"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all disabled:opacity-60"
                 />
               </div>
             </div>
@@ -101,7 +146,10 @@ const LoginPage = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Nhập mật khẩu"
-                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all disabled:opacity-60"
                 />
                 <button
                   type="button"
@@ -132,10 +180,20 @@ const LoginPage = () => {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full py-2.5 rounded-full bg-linear-to-r from-purple-500 to-blue-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm shadow-indigo-200 flex items-center justify-center gap-2"
+              disabled={loading}
+              className="w-full py-2.5 rounded-full bg-linear-to-r from-purple-500 to-blue-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm shadow-indigo-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Đăng nhập
-              <ArrowRight size={15} />
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  Đang đăng nhập...
+                </>
+              ) : (
+                <>
+                  Đăng nhập
+                  <ArrowRight size={15} />
+                </>
+              )}
             </button>
           </form>
 

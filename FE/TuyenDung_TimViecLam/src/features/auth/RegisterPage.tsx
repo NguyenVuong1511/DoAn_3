@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import {
   Eye, EyeOff, User, Mail, Lock, ArrowRight, ArrowBigLeft,
-  Building2, Globe, MapPin, FileText, Phone, Calendar, Briefcase,
-  Flame
+  Building2, Globe, MapPin, FileText, Phone, Calendar, Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { registerCandidateApi, registerEmployerApi } from '../../services/authService';
 
 const inputClass =
-  'w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all';
+  'w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all disabled:opacity-60';
 const labelClass = 'block text-xs font-semibold text-gray-600 mb-1.5';
 
 const SectionDivider = ({ title }: { title: string }) => (
@@ -24,8 +24,91 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
   const [role, setRole] = useState<'candidate' | 'employer'>('candidate');
+
+  // ── Form state chung ──────────────────────────────────────────────────────
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // ── Ứng viên ──────────────────────────────────────────────────────────────
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [gender, setGender] = useState('');
+  const [address, setAddress] = useState('');
+
+  // ── Nhà tuyển dụng ────────────────────────────────────────────────────────
+  const [companyName, setCompanyName] = useState('');
+  const [companyAddress, setCompanyAddress] = useState('');
+  const [companyWebsite, setCompanyWebsite] = useState('');
+  const [companyDescription, setCompanyDescription] = useState('');
+
+  // ── Reset lỗi khi đổi role ────────────────────────────────────────────────
+  const handleRoleChange = (r: 'candidate' | 'employer') => {
+    setRole(r);
+    setError('');
+    setSuccessMsg('');
+  };
+
+  // ── Validate chung ────────────────────────────────────────────────────────
+  const validate = () => {
+    if (!email.trim()) return 'Vui lòng nhập email.';
+    if (!password) return 'Vui lòng nhập mật khẩu.';
+    if (password.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự.';
+    if (password !== confirmPassword) return 'Xác nhận mật khẩu không khớp.';
+    if (role === 'candidate' && !fullName.trim()) return 'Vui lòng nhập họ và tên.';
+    if (role === 'employer' && !companyName.trim()) return 'Vui lòng nhập tên công ty.';
+    if (!agreed) return 'Bạn cần đồng ý với điều khoản dịch vụ.';
+    return '';
+  };
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
+
+    const validationError = validate();
+    if (validationError) return setError(validationError);
+
+    setLoading(true);
+    try {
+      if (role === 'candidate') {
+        await registerCandidateApi({
+          email: email.trim(),
+          password,
+          confirmPassword,
+          fullName: fullName.trim(),
+          phone: phone.trim() || undefined,
+          dateOfBirth: dateOfBirth || undefined,
+          gender: gender || undefined,
+          address: address.trim() || undefined,
+        });
+      } else {
+        await registerEmployerApi({
+          email: email.trim(),
+          password,
+          confirmPassword,
+          companyName: companyName.trim(),
+          companyAddress: companyAddress.trim() || undefined,
+          companyWebsite: companyWebsite.trim() || undefined,
+          companyDescription: companyDescription.trim() || undefined,
+        });
+      }
+
+      setSuccessMsg('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
+      setTimeout(() => navigate('/login'), 2000);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Đăng ký thất bại. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 via-white to-indigo-50 flex items-center justify-center p-4">
@@ -94,7 +177,7 @@ const RegisterPage = () => {
           {/* Role Switcher */}
           <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
             {(['candidate', 'employer'] as const).map((r) => (
-              <button key={r} onClick={() => setRole(r)}
+              <button key={r} onClick={() => handleRoleChange(r)}
                 className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${role === r
                   ? 'bg-white text-indigo-600 shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'}`}>
@@ -103,7 +186,19 @@ const RegisterPage = () => {
             ))}
           </div>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          {/* Error / Success banner */}
+          {error && (
+            <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2">
+              <span className="shrink-0">⚠️</span>{error}
+            </div>
+          )}
+          {successMsg && (
+            <div className="mb-4 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2">
+              <span className="shrink-0">✅</span>{successMsg}
+            </div>
+          )}
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
 
             {/* ── Thông tin tài khoản ── */}
             <SectionDivider title="Thông tin tài khoản" />
@@ -113,7 +208,8 @@ const RegisterPage = () => {
               <label className={labelClass}>Email <span className="text-red-400">*</span></label>
               <div className="relative">
                 <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="email" placeholder="Nhập email" className={inputClass} />
+                <input type="email" placeholder="Nhập email" className={inputClass}
+                  value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
               </div>
             </div>
 
@@ -122,7 +218,8 @@ const RegisterPage = () => {
               <label className={labelClass}>Mật khẩu <span className="text-red-400">*</span></label>
               <div className="relative">
                 <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type={showPassword ? 'text' : 'password'} placeholder="Nhập mật khẩu" className={inputClass} />
+                <input type={showPassword ? 'text' : 'password'} placeholder="Nhập mật khẩu" className={inputClass}
+                  value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -135,7 +232,8 @@ const RegisterPage = () => {
               <label className={labelClass}>Xác nhận mật khẩu <span className="text-red-400">*</span></label>
               <div className="relative">
                 <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type={showConfirm ? 'text' : 'password'} placeholder="Nhập lại mật khẩu" className={inputClass} />
+                <input type={showConfirm ? 'text' : 'password'} placeholder="Nhập lại mật khẩu" className={inputClass}
+                  value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={loading} />
                 <button type="button" onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -153,7 +251,8 @@ const RegisterPage = () => {
                   <label className={labelClass}>Họ và tên <span className="text-red-400">*</span></label>
                   <div className="relative">
                     <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="text" placeholder="Nhập họ và tên" className={inputClass} />
+                    <input type="text" placeholder="Nhập họ và tên" className={inputClass}
+                      value={fullName} onChange={(e) => setFullName(e.target.value)} disabled={loading} />
                   </div>
                 </div>
 
@@ -162,7 +261,8 @@ const RegisterPage = () => {
                   <label className={labelClass}>Số điện thoại</label>
                   <div className="relative">
                     <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="tel" placeholder="VD: 0912 345 678" className={inputClass} />
+                    <input type="tel" placeholder="VD: 0912 345 678" className={inputClass}
+                      value={phone} onChange={(e) => setPhone(e.target.value)} disabled={loading} />
                   </div>
                 </div>
 
@@ -172,21 +272,22 @@ const RegisterPage = () => {
                     <label className={labelClass}>Ngày sinh</label>
                     <div className="relative">
                       <Calendar size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input type="date" className={inputClass} />
+                      <input type="date" className={inputClass}
+                        value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} disabled={loading} />
                     </div>
                   </div>
                   <div>
                     <label className={labelClass}>Giới tính</label>
                     <div className="relative">
                       <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <select className={inputClass + ' cursor-pointer'} defaultValue="">
-                        <option value="" disabled>Chọn giới tính</option>
+                      <select className={inputClass + ' cursor-pointer'} value={gender}
+                        onChange={(e) => setGender(e.target.value)} disabled={loading}>
+                        <option value="">Chọn giới tính</option>
                         <option value="Nam">Nam</option>
                         <option value="Nữ">Nữ</option>
                         <option value="Khác">Khác</option>
                       </select>
                     </div>
-
                   </div>
                 </div>
 
@@ -195,7 +296,8 @@ const RegisterPage = () => {
                   <label className={labelClass}>Địa chỉ</label>
                   <div className="relative">
                     <MapPin size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="text" placeholder="Nhập địa chỉ của bạn" className={inputClass} />
+                    <input type="text" placeholder="Nhập địa chỉ của bạn" className={inputClass}
+                      value={address} onChange={(e) => setAddress(e.target.value)} disabled={loading} />
                   </div>
                 </div>
               </>
@@ -211,7 +313,8 @@ const RegisterPage = () => {
                   <label className={labelClass}>Tên công ty <span className="text-red-400">*</span></label>
                   <div className="relative">
                     <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="text" placeholder="Nhập tên công ty" className={inputClass} />
+                    <input type="text" placeholder="Nhập tên công ty" className={inputClass}
+                      value={companyName} onChange={(e) => setCompanyName(e.target.value)} disabled={loading} />
                   </div>
                 </div>
 
@@ -220,7 +323,8 @@ const RegisterPage = () => {
                   <label className={labelClass}>Địa chỉ công ty</label>
                   <div className="relative">
                     <MapPin size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="text" placeholder="Nhập địa chỉ" className={inputClass} />
+                    <input type="text" placeholder="Nhập địa chỉ" className={inputClass}
+                      value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} disabled={loading} />
                   </div>
                 </div>
 
@@ -229,7 +333,8 @@ const RegisterPage = () => {
                   <label className={labelClass}>Website công ty</label>
                   <div className="relative">
                     <Globe size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="url" placeholder="https://congty.com" className={inputClass} />
+                    <input type="url" placeholder="https://congty.com" className={inputClass}
+                      value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} disabled={loading} />
                   </div>
                 </div>
 
@@ -239,10 +344,10 @@ const RegisterPage = () => {
                   <div className="relative">
                     <FileText size={15} className="absolute left-3.5 top-3.5 text-gray-400" />
                     <textarea rows={3} placeholder="Giới thiệu ngắn về công ty..."
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all resize-none" />
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all resize-none disabled:opacity-60"
+                      value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} disabled={loading} />
                   </div>
                 </div>
-
               </>
             )}
 
@@ -268,10 +373,19 @@ const RegisterPage = () => {
             </label>
 
             {/* Submit */}
-            <button type="submit"
-              className="w-full py-2.5 rounded-full bg-linear-to-r from-purple-500 to-blue-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm shadow-indigo-200 flex items-center justify-center gap-2">
-              Đăng ký
-              <ArrowRight size={15} />
+            <button type="submit" disabled={loading}
+              className="w-full py-2.5 rounded-full bg-linear-to-r from-purple-500 to-blue-500 text-white font-semibold text-sm hover:opacity-90 transition-opacity shadow-sm shadow-indigo-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  Đang đăng ký...
+                </>
+              ) : (
+                <>
+                  Đăng ký
+                  <ArrowRight size={15} />
+                </>
+              )}
             </button>
           </form>
 
