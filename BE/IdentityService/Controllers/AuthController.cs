@@ -20,13 +20,49 @@ namespace IdentityService.Controllers
         }
 
         [HttpPost("register/candidate")]
-        public IActionResult RegisterCandidate([FromBody] RegisterRequest request)
+        public IActionResult RegisterCandidate([FromBody] RegisterCandidateRequest request)
         {
-            bool isSuccess = _userRepo.RegisterCandidate(request);
-            if (isSuccess)
-                return Ok(new { Message = "Đăng ký ứng viên thành công!" });
+            // Kết quả bây giờ là RepositoryResult<Guid> chứ không phải bool
+            var result = _userRepo.RegisterCandidate(request);
 
-            return BadRequest("Đăng ký thất bại. Email có thể đã tồn tại.");
+            if (result.Success)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    message = result.Message,
+                    data = new { userId = result.Data } // Trả về ID vừa tạo nếu cần
+                });
+            }
+
+            // Trả về lỗi cụ thể từ Repository (Email trùng hoặc lỗi SQL...)
+            return BadRequest(new
+            {
+                success = false,
+                message = result.Message
+            });
+        }
+
+        [HttpPost("register/recruiter")]
+        public IActionResult RegisterRecruiter([FromBody] RegisterRecruiterRequest request)
+        {
+            var result = _userRepo.RegisterRecruiter(request);
+
+            if (result.Success)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    message = result.Message,
+                    data = new { userId = result.Data }
+                });
+            }
+
+            return BadRequest(new
+            {
+                success = false,
+                message = result.Message
+            });
         }
 
         [HttpPost("login")]
@@ -44,9 +80,13 @@ namespace IdentityService.Controllers
             // 3. Trả Token về cho Client (Web/Mobile)
             return Ok(new
             {
-                Message = "Đăng nhập thành công!",
-                Token = tokenString,
-                Role = role
+                success = true,
+                message = "Đăng nhập thành công!",
+                data = new {
+                    token = tokenString,
+                    userId = userId,
+                    role = role
+                }
             });
         }
     }

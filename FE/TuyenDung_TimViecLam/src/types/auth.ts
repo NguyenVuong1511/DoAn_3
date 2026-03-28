@@ -18,7 +18,6 @@ export interface LoginResponse {
 export interface RegisterCandidateRequest {
   email: string;
   password: string;
-  confirmPassword: string;
   fullName: string;
   phone?: string;
   dateOfBirth?: string;   // "YYYY-MM-DD"
@@ -28,10 +27,9 @@ export interface RegisterCandidateRequest {
 
 // ─── Register – Nhà tuyển dụng ───────────────────────────────────────────────
 
-export interface RegisterEmployerRequest {
+export interface RegisterRecruiterRequest {
   email: string;
   password: string;
-  confirmPassword: string;
   companyName: string;
   companyAddress?: string;
   companyWebsite?: string;

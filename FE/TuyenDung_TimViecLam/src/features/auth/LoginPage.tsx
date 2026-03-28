@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, ArrowBigLeft, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { loginApi } from '../../services/authService';
@@ -12,13 +12,23 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Refs để focus vào ô input lỗi
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  // Helper: hiện lỗi + focus vào input lỗi
+  const showError = (msg: string, ref?: React.RefObject<HTMLInputElement | null>) => {
+    setError(msg);
+    setTimeout(() => ref?.current?.focus(), 50);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     // Validate phía client
-    if (!email.trim()) return setError('Vui lòng nhập email.');
-    if (!password) return setError('Vui lòng nhập mật khẩu.');
+    if (!email.trim()) return showError('Vui lòng nhập email.', emailRef);
+    if (!password) return showError('Vui lòng nhập mật khẩu.', passwordRef);
 
     setLoading(true);
     try {
@@ -94,8 +104,9 @@ const LoginPage = () => {
         </div>
 
         {/* Right Panel - Form */}
-        <div className="flex-1 bg-white p-8 sm:p-12 flex flex-col justify-center">
-          <button onClick={() => navigate("/")} className='flex items-center gap-2 text-sm text-indigo-600 font-semibold hover:underline mb-3'>
+        <div className="flex-1 bg-white p-8 sm:p-10">
+          <button onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-sm text-indigo-600 font-semibold hover:underline mb-3">
             <ArrowBigLeft size={15} />Trang chủ
           </button>
 
@@ -125,6 +136,7 @@ const LoginPage = () => {
               <div className="relative">
                 <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
+                  ref={emailRef}
                   type="email"
                   placeholder="Nhập email của bạn"
                   value={email}
@@ -144,6 +156,7 @@ const LoginPage = () => {
               <div className="relative">
                 <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
+                  ref={passwordRef}
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Nhập mật khẩu"
                   value={password}
@@ -174,7 +187,7 @@ const LoginPage = () => {
                   </svg>
                 )}
               </div>
-              <span className="text-xs text-gray-500">Ghi nhớ đăng nhập</span>
+              <span onClick={() => setRemember(!remember)} className="text-xs text-gray-500">Ghi nhớ đăng nhập</span>
             </label>
 
             {/* Submit */}

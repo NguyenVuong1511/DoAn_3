@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import axios from 'axios';
 import {
   Eye, EyeOff, User, Mail, Lock, ArrowRight, ArrowBigLeft,
   Building2, Globe, MapPin, FileText, Phone, Calendar, Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { registerCandidateApi, registerEmployerApi } from '../../services/authService';
+import { registerCandidateApi, registerRecruiterApi } from '../../services/authService';
 
 const inputClass =
   'w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all disabled:opacity-60';
@@ -48,6 +49,19 @@ const RegisterPage = () => {
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [companyDescription, setCompanyDescription] = useState('');
 
+  // Refs để focus vào ô input lỗi
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const fullNameRef = useRef<HTMLInputElement>(null);
+  const companyNameRef = useRef<HTMLInputElement>(null);
+
+  // Helper: hiện lỗi + focus vào input lỗi
+  const showError = (msg: string, ref?: React.RefObject<HTMLInputElement | null>) => {
+    setError(msg);
+    setTimeout(() => ref?.current?.focus(), 50);
+  };
+
   // ── Reset lỗi khi đổi role ────────────────────────────────────────────────
   const handleRoleChange = (r: 'candidate' | 'employer') => {
     setRole(r);
@@ -55,16 +69,16 @@ const RegisterPage = () => {
     setSuccessMsg('');
   };
 
-  // ── Validate chung ────────────────────────────────────────────────────────
-  const validate = () => {
-    if (!email.trim()) return 'Vui lòng nhập email.';
-    if (!password) return 'Vui lòng nhập mật khẩu.';
-    if (password.length < 6) return 'Mật khẩu phải có ít nhất 6 ký tự.';
-    if (password !== confirmPassword) return 'Xác nhận mật khẩu không khớp.';
-    if (role === 'candidate' && !fullName.trim()) return 'Vui lòng nhập họ và tên.';
-    if (role === 'employer' && !companyName.trim()) return 'Vui lòng nhập tên công ty.';
-    if (!agreed) return 'Bạn cần đồng ý với điều khoản dịch vụ.';
-    return '';
+  // ── Validate chung (trả về true nếu hợp lệ) ──────────────────────────────
+  const validate = (): boolean => {
+    if (!email.trim()) { showError('Vui lòng nhập email.', emailRef); return false; }
+    if (!password) { showError('Vui lòng nhập mật khẩu.', passwordRef); return false; }
+    if (password.length < 6) { showError('Mật khẩu phải có ít nhất 6 ký tự.', passwordRef); return false; }
+    if (password !== confirmPassword) { showError('Xác nhận mật khẩu không khớp.', confirmPasswordRef); return false; }
+    if (role === 'candidate' && !fullName.trim()) { showError('Vui lòng nhập họ và tên.', fullNameRef); return false; }
+    if (role === 'employer' && !companyName.trim()) { showError('Vui lòng nhập tên công ty.', companyNameRef); return false; }
+    if (!agreed) { showError('Bạn cần đồng ý với điều khoản dịch vụ.'); return false; }
+    return true;
   };
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -73,8 +87,7 @@ const RegisterPage = () => {
     setError('');
     setSuccessMsg('');
 
-    const validationError = validate();
-    if (validationError) return setError(validationError);
+    if (!validate()) return;
 
     setLoading(true);
     try {
@@ -82,7 +95,6 @@ const RegisterPage = () => {
         await registerCandidateApi({
           email: email.trim(),
           password,
-          confirmPassword,
           fullName: fullName.trim(),
           phone: phone.trim() || undefined,
           dateOfBirth: dateOfBirth || undefined,
@@ -90,10 +102,9 @@ const RegisterPage = () => {
           address: address.trim() || undefined,
         });
       } else {
-        await registerEmployerApi({
+        await registerRecruiterApi({
           email: email.trim(),
           password,
-          confirmPassword,
           companyName: companyName.trim(),
           companyAddress: companyAddress.trim() || undefined,
           companyWebsite: companyWebsite.trim() || undefined,
@@ -104,7 +115,16 @@ const RegisterPage = () => {
       setSuccessMsg('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Đăng ký thất bại. Vui lòng thử lại.');
+      if (axios.isAxiosError(err)) {
+        // Lấy thông báo lỗi từ Backend C# gửi về (nếu có)
+        // err.response.data chính là giá trị nằm trong return BadRequest(...)
+        const backendMessage = err.response?.data?.message || err.response?.data || 'Đăng ký thất bại từ máy chủ.';
+        setError(backendMessage);
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Đăng ký thất bại. Vui lòng thử lại.');
+      }
     } finally {
       setLoading(false);
     }
@@ -209,6 +229,7 @@ const RegisterPage = () => {
               <div className="relative">
                 <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input type="email" placeholder="Nhập email" className={inputClass}
+                  ref={emailRef}
                   value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} />
               </div>
             </div>
@@ -219,6 +240,7 @@ const RegisterPage = () => {
               <div className="relative">
                 <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input type={showPassword ? 'text' : 'password'} placeholder="Nhập mật khẩu" className={inputClass}
+                  ref={passwordRef}
                   value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -233,6 +255,7 @@ const RegisterPage = () => {
               <div className="relative">
                 <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input type={showConfirm ? 'text' : 'password'} placeholder="Nhập lại mật khẩu" className={inputClass}
+                  ref={confirmPasswordRef}
                   value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={loading} />
                 <button type="button" onClick={() => setShowConfirm(!showConfirm)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -252,6 +275,7 @@ const RegisterPage = () => {
                   <div className="relative">
                     <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input type="text" placeholder="Nhập họ và tên" className={inputClass}
+                      ref={fullNameRef}
                       value={fullName} onChange={(e) => setFullName(e.target.value)} disabled={loading} />
                   </div>
                 </div>
@@ -314,6 +338,7 @@ const RegisterPage = () => {
                   <div className="relative">
                     <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                     <input type="text" placeholder="Nhập tên công ty" className={inputClass}
+                      ref={companyNameRef}
                       value={companyName} onChange={(e) => setCompanyName(e.target.value)} disabled={loading} />
                   </div>
                 </div>
@@ -363,7 +388,7 @@ const RegisterPage = () => {
                   </svg>
                 )}
               </div>
-              <span className="text-xs text-gray-500 leading-relaxed">
+              <span onClick={() => setAgreed(!agreed)} className="text-xs text-gray-500 leading-relaxed">
                 Tôi đã đọc và đồng ý với{' '}
                 <a href="#" className="text-indigo-600 hover:underline font-semibold">Điều khoản dịch vụ</a>
                 {' '}và{' '}

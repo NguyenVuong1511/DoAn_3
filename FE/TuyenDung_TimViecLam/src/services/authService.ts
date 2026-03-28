@@ -3,7 +3,7 @@ import type {
   LoginRequest,
   LoginResponse,
   RegisterCandidateRequest,
-  RegisterEmployerRequest,
+  RegisterRecruiterRequest,
   ApiResponse,
 } from '../types/auth';
 
@@ -30,10 +30,10 @@ export async function registerCandidateApi(
 }
 
 // ─── Đăng ký nhà tuyển dụng ──────────────────────────────────────────────────
-export async function registerEmployerApi(
-  payload: RegisterEmployerRequest
+export async function registerRecruiterApi(
+  payload: RegisterRecruiterRequest
 ): Promise<ApiResponse> {
-  const { data } = await axiosInstance.post<ApiResponse>('/auth/register/employer', payload);
+  const { data } = await axiosInstance.post<ApiResponse>('/auth/register/recruiter', payload);
   return data;
 }
 
