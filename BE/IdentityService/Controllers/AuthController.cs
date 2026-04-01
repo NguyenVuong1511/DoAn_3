@@ -72,22 +72,22 @@ namespace IdentityService.Controllers
             bool isValid = _userRepo.ValidateUser(request.Email, request.Password, out string role, out Guid userId);
 
             if (!isValid)
-                return Unauthorized(new { Message = "Sai email, mật khẩu hoặc tài khoản bị khóa!" });
+                // Trả về lỗi dùng hàm Fail() của RepositoryResult
+                return Unauthorized(RepositoryResult<object>.Fail("Sai email, mật khẩu hoặc tài khoản bị khóa!"));
 
             // 2. Nếu đúng, tạo Token JWT
             string tokenString = _tokenGen.GenerateToken(userId, request.Email, role);
 
-            // 3. Trả Token về cho Client (Web/Mobile)
-            return Ok(new
+            // 3. Gom dữ liệu lại thành một object
+            var responseData = new
             {
-                success = true,
-                message = "Đăng nhập thành công!",
-                data = new {
-                    token = tokenString,
-                    userId = userId,
-                    role = role
-                }
-            });
+                token = tokenString,
+                userId = userId,
+                role = role
+            };
+
+            // 4. Trả kết quả thành công dùng hàm Ok() của RepositoryResult
+            return Ok(RepositoryResult<object>.Ok(responseData, "Đăng nhập thành công!"));
         }
     }
 }

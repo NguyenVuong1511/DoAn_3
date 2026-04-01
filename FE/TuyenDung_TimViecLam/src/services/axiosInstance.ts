@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
 // Tự động đính kèm token vào mọi request nếu đã đăng nhập
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,11 +28,19 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token hết hạn hoặc không hợp lệ → xóa và chuyển về login
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userId');
-      window.location.href = '/login';
+      // Chỉ tự động logout + redirect khi KHÔNG đang ở trang login
+      // (tức là token hết hạn khi đã đăng nhập rồi)
+      // Nếu đang ở trang /login thì để lỗi trả về cho form tự hiển thị
+      const isOnLoginPage = window.location.pathname === '/login';
+      if (!isOnLoginPage) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('userRole');
+        sessionStorage.removeItem('userId');
+        window.location.href = '/login';
+      }
     }
 
     // Lấy message từ backend nếu có, fallback về message mặc định

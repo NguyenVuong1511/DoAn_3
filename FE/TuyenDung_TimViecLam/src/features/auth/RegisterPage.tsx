@@ -1,11 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import {
   Eye, EyeOff, User, Mail, Lock, ArrowRight, ArrowBigLeft,
-  Building2, Globe, MapPin, FileText, Phone, Calendar, Loader2
+  Building2, Globe, MapPin, FileText, Phone, Calendar, Loader2,
+  CircleCheck, TriangleAlert
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { registerCandidateApi, registerRecruiterApi } from '../../services/authService';
+import { registerCandidateApi, registerRecruiterApi, getToken, clearAuthData } from '../../services/authService';
+import { isTokenExpired } from '../../utils/jwt';
 
 const inputClass =
   'w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all disabled:opacity-60';
@@ -31,6 +33,17 @@ const RegisterPage = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState<'candidate' | 'employer'>('candidate');
 
+  // Redirect nếu đã đăng nhập
+  useEffect(() => {
+    const token = getToken();
+    if (token && !isTokenExpired(token)) {
+      navigate('/');
+    } else if (token && isTokenExpired(token)) {
+      // Clear token nếu đã hết hạn để không bị rác
+      clearAuthData();
+    }
+  }, [navigate]);
+
   // ── Form state chung ──────────────────────────────────────────────────────
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,11 +68,19 @@ const RegisterPage = () => {
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
   const fullNameRef = useRef<HTMLInputElement>(null);
   const companyNameRef = useRef<HTMLInputElement>(null);
+  const errorBannerRef = useRef<HTMLDivElement>(null);
 
-  // Helper: hiện lỗi + focus vào input lỗi
+  // Helper: hiện lỗi + focus vào input lỗi (nếu có ref)
+  // Nếu không có ref (lỗi không phải do input) → cuộn lên banner lỗi
   const showError = (msg: string, ref?: React.RefObject<HTMLInputElement | null>) => {
     setError(msg);
-    setTimeout(() => ref?.current?.focus(), 50);
+    setTimeout(() => {
+      if (ref?.current) {
+        ref.current.focus();
+      } else {
+        errorBannerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
   };
 
   // ── Reset lỗi khi đổi role ────────────────────────────────────────────────
@@ -115,16 +136,19 @@ const RegisterPage = () => {
       setSuccessMsg('Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err: unknown) {
+      let errMsg = 'Đăng ký thất bại. Vui lòng thử lại.';
       if (axios.isAxiosError(err)) {
         // Lấy thông báo lỗi từ Backend C# gửi về (nếu có)
         // err.response.data chính là giá trị nằm trong return BadRequest(...)
-        const backendMessage = err.response?.data?.message || err.response?.data || 'Đăng ký thất bại từ máy chủ.';
-        setError(backendMessage);
+        errMsg = err.response?.data?.message || err.response?.data || 'Đăng ký thất bại từ máy chủ.';
       } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Đăng ký thất bại. Vui lòng thử lại.');
+        errMsg = err.message;
       }
+      setError(errMsg);
+      // Cuộn lên banner lỗi để user thấy thông báo
+      setTimeout(() => {
+        errorBannerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 50);
     } finally {
       setLoading(false);
     }
@@ -208,13 +232,14 @@ const RegisterPage = () => {
 
           {/* Error / Success banner */}
           {error && (
-            <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2">
-              <span className="shrink-0">⚠️</span>{error}
+            <div ref={errorBannerRef}
+              className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2">
+              <span className="shrink-0"><TriangleAlert size={18} className="shrink-0 text-yellow-500" /></span>{error}
             </div>
           )}
           {successMsg && (
             <div className="mb-4 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2">
-              <span className="shrink-0">✅</span>{successMsg}
+              <span className="shrink-0"><CircleCheck size={18} className="shrink-0 text-green-500" /></span>{successMsg}
             </div>
           )}
 

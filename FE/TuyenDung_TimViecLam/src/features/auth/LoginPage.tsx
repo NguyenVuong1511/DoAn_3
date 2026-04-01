@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, ArrowBigLeft, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { loginApi } from '../../services/authService';
+import { loginApi, getToken, clearAuthData } from '../../services/authService';
+import { isTokenExpired } from '../../utils/jwt';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -12,14 +13,32 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Redirect nếu đã đăng nhập
+  useEffect(() => {
+    const token = getToken();
+    if (token && !isTokenExpired(token)) {
+      navigate('/');
+    } else if (token && isTokenExpired(token)) {
+      // Clear token nếu đã hết hạn để không bị rác
+      clearAuthData();
+    }
+  }, [navigate]);
+
   // Refs để focus vào ô input lỗi
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const errorBannerRef = useRef<HTMLDivElement>(null);
 
   // Helper: hiện lỗi + focus vào input lỗi
   const showError = (msg: string, ref?: React.RefObject<HTMLInputElement | null>) => {
     setError(msg);
-    setTimeout(() => ref?.current?.focus(), 50);
+    setTimeout(() => {
+      if (ref?.current) {
+        ref.current.focus();
+      } else {
+        errorBannerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +51,7 @@ const LoginPage = () => {
 
     setLoading(true);
     try {
-      const user = await loginApi({ email: email.trim(), password });
+      const user = await loginApi({ email: email.trim(), password }, remember);
 
       // Điều hướng theo role
       if (user.role === 'employer') {

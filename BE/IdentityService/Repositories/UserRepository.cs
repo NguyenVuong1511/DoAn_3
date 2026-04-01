@@ -27,7 +27,7 @@ namespace IdentityService.Repositories
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@email", email);
-                cmd.Parameters.AddWithValue("@password", password); // Sẽ thay bằng Hash sau
+                cmd.Parameters.AddWithValue("@password", password);
 
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -36,7 +36,7 @@ namespace IdentityService.Repositories
                     {
                         isValid = true;
                         userId = reader.GetGuid(0);
-                        role = reader.GetString(1); // Lấy role (CANDIDATE/RECRUITER/ADMIN)
+                        role = reader.GetString(1);
                     }
                 }
             }
