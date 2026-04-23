@@ -1,13 +1,13 @@
 {
   "Routes": [
-    // 1. Tuyến đường dành cho IdentityService (Đăng ký, Đăng nhập)
+    // 1.IdentityService (Đăng ký, Đăng nhập)
     {
       "DownstreamPathTemplate": "/api/auth/{catchAll}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
-          "Port": 7201 // <-- THAY BẰNG CỔNG CỦA IDENTITY SERVICE
+          "Port": 7201
         }
       ],
       "UpstreamPathTemplate": "/gateway/auth/{catchAll}",
@@ -15,7 +15,7 @@
         "Post"
       ]
     },
-    // 2. Tuyến đường dành cho Categories (Ngành nghề)
+    // 2.Categories (Ngành nghề)
     {
       "DownstreamPathTemplate": "/api/categories",
       "DownstreamScheme": "https",
@@ -30,7 +30,22 @@
         "Get"
       ]
     },
-    // 3. Tuyến đường dành cho JobService (Các nghiệp vụ còn lại)
+    // 3.Companies (Danh sách công ty)
+    {
+      "DownstreamPathTemplate": "/api/companies",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/companies",
+      "UpstreamHttpMethod": [
+        "Get"
+      ]
+    },
+    // 4.JobService 
     {
       "DownstreamPathTemplate": "/{catchAll}",
       "DownstreamScheme": "https",

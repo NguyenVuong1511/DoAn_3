@@ -1,22 +1,37 @@
 import { ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import type { Company } from "../../types/companies.ts";
+import { getCompanies } from "../../services/companiesService.ts";
 
-const companies = [
-    { name: "Meta", logo: "M", bg: "bg-blue-100", color: "text-blue-600" },
-    { name: "Netflix", logo: "N", bg: "bg-red-100", color: "text-red-600" },
-    { name: "Spotify", logo: "S", bg: "bg-green-100", color: "text-green-600" },
-    { name: "Adobe", logo: "Ai", bg: "bg-rose-100", color: "text-rose-600" },
-    { name: "Salesforce", logo: "SF", bg: "bg-cyan-100", color: "text-cyan-600" },
-    { name: "Shopify", logo: "s", bg: "bg-emerald-100", color: "text-emerald-600" },
-    { name: "Slack", logo: "#", bg: "bg-purple-100", color: "text-purple-600" },
-    { name: "Figma", logo: "F", bg: "bg-orange-100", color: "text-orange-600" },
-    { name: "Tesla", logo: "T", bg: "bg-gray-200", color: "text-gray-800" },
-    { name: "Google", logo: "G", bg: "bg-red-100", color: "text-blue-600" }
-];
-
-// Combine the array twice to create a seamless infinite scrolling loop effect
-const extendedCompanies = [...companies, ...companies];
 
 const TopRecruiters = () => {
+    const [companies, setCompanies] = useState<Company[]>([]);
+    const [loading, setLoading] = useState(true);
+    const extendedCompanies = [...companies, ...companies];
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            try {
+                const response = await getCompanies();
+
+                if (Array.isArray(response)) {
+                    setCompanies(response);
+                } else if (response && response.success) {
+                    setCompanies(response.data);
+                }
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCompanies();
+    }, []);
+
+    if (loading) {
+        return <div className="py-16 text-center">Đang tải dữ liệu...</div>;
+    }
+
     return (
         <section className="w-full bg-slate-50 py-16 md:py-24 font-sans overflow-hidden">
             <style>
@@ -58,8 +73,8 @@ const TopRecruiters = () => {
                             key={index}
                             className="flex items-center gap-4 bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-[0_2px_15px_rgb(0,0,0,0.03)] hover:shadow-md hover:border-indigo-100 transition-all min-w-[200px] shrink-0 cursor-pointer"
                         >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${c.bg} ${c.color}`}>
-                                {c.logo}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-black group-hover:scale-110 transition-transform duration-300`}>
+                                {c.logoUrl}
                             </div>
                             <span className="font-bold text-gray-800 text-sm">
                                 {c.name}

@@ -4,27 +4,27 @@ using TuyenDung_TimViec.Models;
 
 namespace TuyenDung_TimViec.Repositories
 {
-    public interface ICategoryRepository
+    public interface ICompanyRepository
     {
-        Task<List<Category>> GetAllAsync(int? top = null);
+        Task<List<Company>> GetAllAsync(int? top = null);
     }
 
-    public class CategoryRepository : ICategoryRepository
+    public class CompanyRepository : ICompanyRepository
     {
         private readonly string _connectionString;
 
-        public CategoryRepository(IConfiguration configuration)
+        public CompanyRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
-        public async Task<List<Category>> GetAllAsync(int? top = null)
+        public async Task<List<Company>> GetAllAsync(int? top = null)
         {
-            var categories = new List<Category>();
+            var companies = new List<Company>();
             
             string query = top.HasValue 
-                ? $"SELECT TOP (@top) Id, Name, Icon, Color, BgColor FROM Categories" 
-                : "SELECT Id, Name, Icon, Color, BgColor FROM Categories";
+                ? $"SELECT TOP (@top) Id, Name, Logo FROM Companies" 
+                : "SELECT Id, Name, Logo FROM Companies";
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
@@ -40,20 +40,18 @@ namespace TuyenDung_TimViec.Repositories
                     {
                         while (await reader.ReadAsync())
                         {
-                            categories.Add(new Category
+                            companies.Add(new Company
                             {
                                 Id = reader.IsDBNull(0) ? Guid.Empty : reader.GetGuid(0),
                                 Name = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                                IconName = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                                Color = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                                BgColor = reader.IsDBNull(4) ? string.Empty : reader.GetString(4)
+                                LogoUrl = reader.IsDBNull(2) ? string.Empty : reader.GetString(2)
                             });
                         }
                     }
                 }
             }
 
-            return categories;
+            return companies;
         }
     }
 }

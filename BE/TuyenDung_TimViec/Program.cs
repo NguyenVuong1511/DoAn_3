@@ -12,6 +12,7 @@ namespace TuyenDung_TimViec
 
             builder.Services.AddControllers();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 
             var app = builder.Build();
 

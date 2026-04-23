@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getCategories } from "../../services/categoriesService";
 import type { Category } from "../../types/categories";
 import * as LucideIcons from 'lucide-react';

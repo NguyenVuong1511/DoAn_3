@@ -19,7 +19,7 @@ const InstagramIcon = () => (
 const Footer = () => {
     return (
         <footer className="bg-[rgb(11,17,33)] text-slate-300 font-sans border-t border-slate-800/50 pt-16 pb-8">
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Top Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-16">
                     {/* Column 1: Brand & Info (Spans 2 cols) */}
