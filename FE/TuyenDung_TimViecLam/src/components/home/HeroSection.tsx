@@ -50,11 +50,11 @@ const HeroSection = () => {
                             <div className="flex items-center gap-3 w-full">
                                 <Search className="text-indigo-500 w-5 h-5 shrink-0" />
                                 <div className="flex flex-col flex-1 text-left">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tên công việc / từ khóa</span>
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tìm việc</span>
                                     <input
                                         type="text"
-                                        placeholder="Vd. Chuyên viên Marketing"
-                                        className="w-full bg-transparent border-none outline-none text-sm font-bold text-gray-800 placeholder-gray-400 mt-0.5 truncate"
+                                        placeholder="VD: Fullstack,.."
+                                        className="w-full bg-transparent border-none outline-none text-sm font-bold text-gray-600 placeholder-gray-400 mt-0.5 truncate"
                                     />
                                 </div>
                             </div>

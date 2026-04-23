@@ -1,3 +1,5 @@
+using TuyenDung_TimViec.Repositories;
+
 namespace TuyenDung_TimViec
 {
     public class Program
@@ -9,6 +11,7 @@ namespace TuyenDung_TimViec
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             var app = builder.Build();
 

@@ -11,9 +11,26 @@
         }
       ],
       "UpstreamPathTemplate": "/gateway/auth/{catchAll}",
-      "UpstreamHttpMethod": [ "Post" ]
+      "UpstreamHttpMethod": [
+        "Post"
+      ]
     },
-    // 2. Tuyến đường dành cho JobService (Các nghiệp vụ còn lại)
+    // 2. Tuyến đường dành cho Categories (Ngành nghề)
+    {
+      "DownstreamPathTemplate": "/api/categories",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/categories",
+      "UpstreamHttpMethod": [
+        "Get"
+      ]
+    },
+    // 3. Tuyến đường dành cho JobService (Các nghiệp vụ còn lại)
     {
       "DownstreamPathTemplate": "/{catchAll}",
       "DownstreamScheme": "https",
@@ -24,7 +41,12 @@
         }
       ],
       "UpstreamPathTemplate": "/gateway/{catchAll}",
-      "UpstreamHttpMethod": [ "Get", "Post", "Put", "Delete" ]
+      "UpstreamHttpMethod": [
+        "Get",
+        "Post",
+        "Put",
+        "Delete"
+      ]
     }
   ],
   "GlobalConfiguration": {
