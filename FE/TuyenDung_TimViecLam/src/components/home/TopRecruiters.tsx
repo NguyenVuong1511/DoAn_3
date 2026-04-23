@@ -71,11 +71,9 @@ const TopRecruiters = () => {
                     {extendedCompanies.map((c, index) => (
                         <div
                             key={index}
-                            className="flex items-center gap-4 bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-[0_2px_15px_rgb(0,0,0,0.03)] hover:shadow-md hover:border-indigo-100 transition-all min-w-[200px] shrink-0 cursor-pointer"
+                            className="flex max-w-[400px] items-center gap-4 bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-[0_2px_15px_rgb(0,0,0,0.03)] hover:shadow-md hover:border-indigo-100 transition-all min-w-[200px] shrink-0 cursor-pointer"
                         >
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-black group-hover:scale-110 transition-transform duration-300`}>
-                                {c.logoUrl}
-                            </div>
+                            <img src={`/images/${c.logoUrl}`} alt="company logo" className='w-auto h-10 rounded-xl' />
                             <span className="font-bold text-gray-800 text-sm">
                                 {c.name}
                             </span>
