@@ -24,8 +24,8 @@ namespace TuyenDung_TimViec.Repositories
             
             // Câu lệnh SQL linh hoạt: Nếu có top thì dùng SELECT TOP, ngược lại dùng SELECT bình thường
             string query = top.HasValue 
-                ? $"SELECT TOP (@top) Id, Name FROM Categories" 
-                : "SELECT Id, Name FROM Categories";
+                ? $"SELECT TOP (@top) Id, Name, Icon, Color, BgColor FROM Categories" 
+                : "SELECT Id, Name, Icon, Color, BgColor FROM Categories";
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
@@ -44,7 +44,10 @@ namespace TuyenDung_TimViec.Repositories
                             categories.Add(new Category
                             {
                                 Id = reader.GetGuid(0),
-                                Name = reader.GetString(1)
+                                Name = reader.GetString(1),
+                                IconName = reader.GetString(2),
+                                Color = reader.GetString(3),
+                                BgColor = reader.GetString(4)
                             });
                         }
                     }

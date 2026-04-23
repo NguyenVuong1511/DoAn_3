@@ -34,15 +34,15 @@ const Footer = () => {
                         <div className="flex flex-col gap-4 text-sm text-slate-400">
                             <div className="flex items-start gap-3">
                                 <MapPin size={18} className="text-indigo-400 shrink-0 mt-0.5" />
-                                <span className="leading-relaxed">1 Võ Văn Ngân, Phường Linh Chiểu, Thành Phố Thủ Đức, TP. Hồ Chí Minh</span>
+                                <span className="leading-relaxed">Đào Xá, Nghĩa Dân, Hưng Yên, Việt Nam</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Phone size={18} className="text-indigo-400 shrink-0" />
-                                <span>(84) 1900 6868</span>
+                                <span>(84) 999 999 999</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Mail size={18} className="text-indigo-400 shrink-0" />
-                                <span>support@upwork.vn</span>
+                                <span>upwork@support.vn</span>
                             </div>
                         </div>
                     </div>

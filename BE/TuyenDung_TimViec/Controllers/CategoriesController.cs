@@ -20,7 +20,7 @@ namespace TuyenDung_TimViec.Controllers
             try
             {
                 var categories = await _categoryRepository.GetAllAsync(top);
-                return Ok(categories);
+                return Ok(RepositoryResult<object>.Ok(categories, "Lấy danh sách thành công!"));
             }
             catch (Exception ex)
             {
