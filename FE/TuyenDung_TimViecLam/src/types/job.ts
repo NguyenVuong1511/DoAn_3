@@ -40,6 +40,8 @@ export interface JobParams {
     jobTypeId?: string;
     levelId?: string;
     experienceId?: string;
+    minSalary?: number;
+    maxSalary?: number;
 }
 
 export interface ApiResponse<T> {

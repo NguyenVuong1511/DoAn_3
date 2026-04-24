@@ -69,28 +69,44 @@ const JobListPage = () => {
             <Header />
 
             <main className="flex-1 w-full pb-20">
-                {/* Hero Banner Section - New Geometric Style */}
-                <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden bg-slate-900">
+                {/* Hero Banner Section - Abstract Corporate Style */}
+                <div className="relative w-full h-[350px] md:h-[450px] overflow-hidden bg-[#0f172a]">
                     {/* Background Image */}
-                    <div 
-                        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80" 
+                    <div
+                        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60 mix-blend-luminosity transition-transform duration-1000"
                         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3")' }}
                     />
-                    
-                    {/* Sophisticated Overlays */}
-                    <div className="absolute inset-0 bg-linear-to-br from-indigo-600/40 via-transparent to-purple-600/20" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.1)_0%,transparent_50%)]" />
-                    
-                    {/* Dotted Pattern Overlay */}
-                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
-                    {/* Geometric Accents */}
-                    <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-                    <div className="absolute top-1/2 left-0 w-full h-[1px] bg-linear-to-r from-transparent via-white/20 to-transparent" />
-                    <div className="absolute top-0 left-1/4 w-[1px] h-full bg-linear-to-b from-transparent via-white/10 to-transparent" />
-                    
-                    {/* Subtle Light Leak */}
-                    <div className="absolute inset-0 bg-linear-to-tr from-transparent via-indigo-500/5 to-transparent pointer-events-none" />
+                    {/* Premium Gradient Overlays */}
+                    <div className="absolute inset-0 bg-linear-to-tr from-indigo-900 via-slate-900/40 to-transparent" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(99,102,241,0.15)_0%,transparent_70%)]" />
+
+                    {/* Floating Data Cards - Integrated with real API data */}
+                    <div className="absolute inset-0 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-start pointer-events-none">
+                        <div className="flex flex-col gap-4">
+                            <div className="px-6 py-4 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl inline-flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                    <Briefcase size={24} />
+                                </div>
+                                <div>
+                                    <div className="text-3xl font-black text-white font-display leading-none mb-1">
+                                        {pagination.totalCount.toLocaleString()}
+                                    </div>
+                                    <div className="text-[10px] text-gray-400 font-black uppercase tracking-widest">Việc làm đang tuyển</div>
+                                </div>
+                            </div>
+
+                            <div className="hidden md:flex px-5 py-3 bg-indigo-500/10 backdrop-blur-lg border border-indigo-500/20 rounded-2xl items-center gap-3 w-fit">
+                                <div className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
+                                <span className="text-xs font-bold text-indigo-200 uppercase tracking-widest">
+                                    Trang {pagination.currentPage} / {pagination.totalPages}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Decorative Mesh Pattern */}
+                    <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")' }} />
 
                     {/* Bottom Edge Blend */}
                     <div className="absolute bottom-0 left-0 w-full h-32 bg-linear-to-t from-[#f8fafc] to-transparent" />
@@ -108,9 +124,7 @@ const JobListPage = () => {
                                 </p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl text-sm font-bold border border-indigo-100">
-                                    {pagination.totalCount} công việc tìm thấy
-                                </div>
+
                                 <button
                                     onClick={() => setShowMobileFilters(!showMobileFilters)}
                                     className="md:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700"
