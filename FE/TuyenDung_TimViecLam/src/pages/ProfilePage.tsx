@@ -231,6 +231,7 @@ const ProfilePage = () => {
                       phone: cvData?.phone || '',
                       address: cvData?.address || '',
                       dateOfBirth: cvData?.dateOfBirth || '',
+                      gender: cvData?.gender || '',
                       github: cvData?.github || '',
                       linkedIn: cvData?.linkedIn || '',
                       website: cvData?.website || ''
@@ -266,7 +267,7 @@ const ProfilePage = () => {
                   </button>
                 </div>
 
-                <h2 className="text-2xl font-black font-display text-gray-900 mb-1 leading-tight">{displayName} {cvData?.gender === 'Nam' ? '♂️' : cvData?.gender === 'Nữ' ? '♀️' : 'Khác'}</h2>
+                <h2 className="text-2xl font-black font-display text-gray-900 mb-1 leading-tight">{displayName} {cvData?.gender === 'Nam' ? '♂️' : cvData?.gender === 'Nữ' ? '♀️' : cvData?.gender === 'Khác' ? '⚧️' : ''}</h2>
                 <p className="text-[15px] font-medium text-indigo-600 mb-5">{displayTitle}</p>
 
                 <div className="w-full flex gap-3 mb-6">
@@ -571,6 +572,15 @@ const ProfilePage = () => {
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-gray-700">Ngày sinh</label>
                 <input type="date" value={draftBasicInfo.dateOfBirth ? new Date(draftBasicInfo.dateOfBirth).toISOString().split('T')[0] : ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, dateOfBirth: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-700">Giới tính</label>
+                <select value={draftBasicInfo.gender || ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, gender: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-white">
+                  <option value="">Chưa cập nhật</option>
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                  <option value="Khác">Khác</option>
+                </select>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-gray-700">Số điện thoại</label>

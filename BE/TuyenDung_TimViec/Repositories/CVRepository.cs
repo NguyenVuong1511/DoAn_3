@@ -170,6 +170,7 @@ namespace TuyenDung_TimViec.Repositories
                         string queryCandidate = @"
                             UPDATE Candidates 
                             SET FullName = @FullName, 
+                                Gender = @Gender,
                                 Phone = @Phone, 
                                 Address = @Address, 
                                 DateOfBirth = @DateOfBirth, 
@@ -182,6 +183,7 @@ namespace TuyenDung_TimViec.Repositories
                         using (SqlCommand cmd = new SqlCommand(queryCandidate, connection, transaction))
                         {
                             cmd.Parameters.AddWithValue("@FullName", (object)cv.FullName ?? string.Empty);
+                            cmd.Parameters.AddWithValue("@Gender", (object)cv.Gender ?? string.Empty);
                             cmd.Parameters.AddWithValue("@Phone", (object)cv.Phone ?? string.Empty);
                             cmd.Parameters.AddWithValue("@Address", (object)cv.Address ?? string.Empty);
                             cmd.Parameters.AddWithValue("@DateOfBirth", (object)cv.DateOfBirth ?? DBNull.Value);
