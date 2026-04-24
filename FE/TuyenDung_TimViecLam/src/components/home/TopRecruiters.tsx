@@ -53,7 +53,7 @@ const TopRecruiters = () => {
                 `}
             </style>
 
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 text-center mb-12">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 text-center mb-12">
                 <div className="text-[11px] font-bold tracking-widest text-indigo-600 uppercase mb-3">
                     ĐỐI TÁC TIN CẬY
                 </div>

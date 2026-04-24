@@ -32,5 +32,23 @@ namespace TuyenDung_TimViec.Controllers
                 return StatusCode(500, $"Lỗi hệ thống: {message}");
             }
         }
+        [HttpPut("user/{userId}")]
+        public async Task<IActionResult> UpdateCVDetailByUserId(Guid userId, [FromBody] Models.CVDetail cvDetail)
+        {
+            try
+            {
+                var success = await _cvRepository.UpdateCVDetailAsync(userId, cvDetail);
+                if (!success)
+                {
+                    return BadRequest(RepositoryResult<object>.Fail("Cập nhật CV thất bại."));
+                }
+                return Ok(RepositoryResult<object>.Ok(null, "Cập nhật thông tin CV thành công!"));
+            }
+            catch (Exception ex)
+            {
+                var message = ex.InnerException != null ? $"{ex.Message} | {ex.InnerException.Message}" : ex.Message;
+                return StatusCode(500, $"Lỗi hệ thống: {message}");
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@ namespace TuyenDung_TimViec.Repositories
     public interface ICVRepository
     {
         Task<CVDetail?> GetCVDetailByUserIdAsync(Guid userId);
+        Task<bool> UpdateCVDetailAsync(Guid userId, CVDetail cv);
     }
 
     public class CVRepository : ICVRepository
@@ -29,7 +30,7 @@ namespace TuyenDung_TimViec.Repositories
                 // 1. Get the Candidate Info and their default/latest CV
                 string queryCV = @"
                     SELECT TOP 1 
-                           c.Id as CandidateId, c.FullName, c.Phone, c.Address, c.DateOfBirth, c.Avatar, c.AboutMe, c.Github, c.LinkedIn, c.Website,
+                           c.Id as CandidateId, c.FullName, c.Gender, c.Phone, c.Address, c.DateOfBirth, c.Avatar, c.AboutMe, c.Github, c.LinkedIn, c.Website,
                            u.Email,
                            cv.Id as CVId, cv.Title, cv.Type, cv.FileUrl, cv.UploadDate, cv.IsDefault
                     FROM Candidates c
@@ -49,6 +50,7 @@ namespace TuyenDung_TimViec.Repositories
                             {
                                 CandidateId = reader.GetGuid(reader.GetOrdinal("CandidateId")),
                                 FullName = reader.IsDBNull(reader.GetOrdinal("FullName")) ? string.Empty : reader.GetString(reader.GetOrdinal("FullName")),
+                                Gender = reader.IsDBNull(reader.GetOrdinal("Gender")) ? string.Empty : reader.GetString(reader.GetOrdinal("Gender")),
                                 Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email")),
                                 Phone = reader.IsDBNull(reader.GetOrdinal("Phone")) ? string.Empty : reader.GetString(reader.GetOrdinal("Phone")),
                                 Address = reader.IsDBNull(reader.GetOrdinal("Address")) ? string.Empty : reader.GetString(reader.GetOrdinal("Address")),
@@ -153,6 +155,187 @@ namespace TuyenDung_TimViec.Repositories
             }
 
             return cv;
+        }
+
+        public async Task<bool> UpdateCVDetailAsync(Guid userId, CVDetail cv)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (SqlTransaction transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // 1. Update Candidate Info
+                        string queryCandidate = @"
+                            UPDATE Candidates 
+                            SET FullName = @FullName, 
+                                Phone = @Phone, 
+                                Address = @Address, 
+                                DateOfBirth = @DateOfBirth, 
+                                AboutMe = @AboutMe, 
+                                Github = @Github, 
+                                LinkedIn = @LinkedIn, 
+                                Website = @Website
+                            WHERE UserId = @UserId";
+                        
+                        using (SqlCommand cmd = new SqlCommand(queryCandidate, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@FullName", (object)cv.FullName ?? string.Empty);
+                            cmd.Parameters.AddWithValue("@Phone", (object)cv.Phone ?? string.Empty);
+                            cmd.Parameters.AddWithValue("@Address", (object)cv.Address ?? string.Empty);
+                            cmd.Parameters.AddWithValue("@DateOfBirth", (object)cv.DateOfBirth ?? DBNull.Value);
+                            cmd.Parameters.AddWithValue("@AboutMe", (object)cv.AboutMe ?? string.Empty);
+                            cmd.Parameters.AddWithValue("@Github", (object)cv.Github ?? string.Empty);
+                            cmd.Parameters.AddWithValue("@LinkedIn", (object)cv.LinkedIn ?? string.Empty);
+                            cmd.Parameters.AddWithValue("@Website", (object)cv.Website ?? string.Empty);
+                            cmd.Parameters.AddWithValue("@UserId", userId);
+
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+
+                        // 2. Ensure CV exists and update Title/Type
+                        Guid currentCvId = cv.Id;
+                        if (currentCvId == Guid.Empty)
+                        {
+                            currentCvId = Guid.NewGuid();
+                            cv.Id = currentCvId; // update reference
+                            
+                            // Get CandidateId for insertion
+                            string queryCandidateId = "SELECT Id FROM Candidates WHERE UserId = @UserId";
+                            Guid candidateId = Guid.Empty;
+                            using (SqlCommand cmdCandidateId = new SqlCommand(queryCandidateId, connection, transaction))
+                            {
+                                cmdCandidateId.Parameters.AddWithValue("@UserId", userId);
+                                var result = await cmdCandidateId.ExecuteScalarAsync();
+                                if (result != null) candidateId = (Guid)result;
+                            }
+
+                            if (candidateId != Guid.Empty) {
+                                string insertCv = @"
+                                    INSERT INTO CVs (Id, CandidateId, Title, Type, FileUrl, UploadDate, IsDefault)
+                                    VALUES (@Id, @CandidateId, @Title, @Type, @FileUrl, @UploadDate, @IsDefault)";
+                                using (SqlCommand cmdInsertCv = new SqlCommand(insertCv, connection, transaction))
+                                {
+                                    cmdInsertCv.Parameters.AddWithValue("@Id", currentCvId);
+                                    cmdInsertCv.Parameters.AddWithValue("@CandidateId", candidateId);
+                                    cmdInsertCv.Parameters.AddWithValue("@Title", (object)cv.Title ?? string.Empty);
+                                    cmdInsertCv.Parameters.AddWithValue("@Type", "ONLINE");
+                                    cmdInsertCv.Parameters.AddWithValue("@FileUrl", string.Empty);
+                                    cmdInsertCv.Parameters.AddWithValue("@UploadDate", DateTime.Now);
+                                    cmdInsertCv.Parameters.AddWithValue("@IsDefault", true);
+                                    await cmdInsertCv.ExecuteNonQueryAsync();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            string updateCv = "UPDATE CVs SET Title = @Title WHERE Id = @Id";
+                            using (SqlCommand cmdUpdateCv = new SqlCommand(updateCv, connection, transaction))
+                            {
+                                cmdUpdateCv.Parameters.AddWithValue("@Title", (object)cv.Title ?? string.Empty);
+                                cmdUpdateCv.Parameters.AddWithValue("@Id", currentCvId);
+                                await cmdUpdateCv.ExecuteNonQueryAsync();
+                            }
+                        }
+
+                        if (currentCvId != Guid.Empty)
+                        {
+                            // 3. Update Educations (Delete & Insert)
+                            string deleteEdu = "DELETE FROM CVEducations WHERE CVId = @CVId";
+                            using (SqlCommand cmdDel = new SqlCommand(deleteEdu, connection, transaction))
+                            {
+                                cmdDel.Parameters.AddWithValue("@CVId", currentCvId);
+                                await cmdDel.ExecuteNonQueryAsync();
+                            }
+
+                            if (cv.Educations != null && cv.Educations.Count > 0)
+                            {
+                                foreach (var edu in cv.Educations)
+                                {
+                                    string insertEdu = @"
+                                        INSERT INTO CVEducations (Id, CVId, SchoolName, Major, StartDate, EndDate, Description)
+                                        VALUES (@Id, @CVId, @SchoolName, @Major, @StartDate, @EndDate, @Description)";
+                                    using (SqlCommand cmdInsert = new SqlCommand(insertEdu, connection, transaction))
+                                    {
+                                        cmdInsert.Parameters.AddWithValue("@Id", Guid.NewGuid());
+                                        cmdInsert.Parameters.AddWithValue("@CVId", currentCvId);
+                                        cmdInsert.Parameters.AddWithValue("@SchoolName", (object)edu.SchoolName ?? string.Empty);
+                                        cmdInsert.Parameters.AddWithValue("@Major", (object)edu.Major ?? string.Empty);
+                                        cmdInsert.Parameters.AddWithValue("@StartDate", (object)edu.StartDate ?? DBNull.Value);
+                                        cmdInsert.Parameters.AddWithValue("@EndDate", (object)edu.EndDate ?? DBNull.Value);
+                                        cmdInsert.Parameters.AddWithValue("@Description", (object)edu.Description ?? string.Empty);
+                                        await cmdInsert.ExecuteNonQueryAsync();
+                                    }
+                                }
+                            }
+
+                            // 4. Update Experiences (Delete & Insert)
+                            string deleteExp = "DELETE FROM CVExperiences WHERE CVId = @CVId";
+                            using (SqlCommand cmdDel = new SqlCommand(deleteExp, connection, transaction))
+                            {
+                                cmdDel.Parameters.AddWithValue("@CVId", currentCvId);
+                                await cmdDel.ExecuteNonQueryAsync();
+                            }
+
+                            if (cv.Experiences != null && cv.Experiences.Count > 0)
+                            {
+                                foreach (var exp in cv.Experiences)
+                                {
+                                    string insertExp = @"
+                                        INSERT INTO CVExperiences (Id, CVId, CompanyName, Position, StartDate, EndDate, Description)
+                                        VALUES (@Id, @CVId, @CompanyName, @Position, @StartDate, @EndDate, @Description)";
+                                    using (SqlCommand cmdInsert = new SqlCommand(insertExp, connection, transaction))
+                                    {
+                                        cmdInsert.Parameters.AddWithValue("@Id", Guid.NewGuid());
+                                        cmdInsert.Parameters.AddWithValue("@CVId", currentCvId);
+                                        cmdInsert.Parameters.AddWithValue("@CompanyName", (object)exp.CompanyName ?? string.Empty);
+                                        cmdInsert.Parameters.AddWithValue("@Position", (object)exp.Position ?? string.Empty);
+                                        cmdInsert.Parameters.AddWithValue("@StartDate", (object)exp.StartDate ?? DBNull.Value);
+                                        cmdInsert.Parameters.AddWithValue("@EndDate", (object)exp.EndDate ?? DBNull.Value);
+                                        cmdInsert.Parameters.AddWithValue("@Description", (object)exp.Description ?? string.Empty);
+                                        await cmdInsert.ExecuteNonQueryAsync();
+                                    }
+                                }
+                            }
+
+                            // 5. Update Skills (Delete & Insert)
+                            string deleteSkill = "DELETE FROM CVSkills WHERE CVId = @CVId";
+                            using (SqlCommand cmdDel = new SqlCommand(deleteSkill, connection, transaction))
+                            {
+                                cmdDel.Parameters.AddWithValue("@CVId", currentCvId);
+                                await cmdDel.ExecuteNonQueryAsync();
+                            }
+
+                            if (cv.Skills != null && cv.Skills.Count > 0)
+                            {
+                                foreach (var skill in cv.Skills)
+                                {
+                                    string insertSkill = @"
+                                        INSERT INTO CVSkills (Id, CVId, SkillName, Level)
+                                        VALUES (@Id, @CVId, @SkillName, @Level)";
+                                    using (SqlCommand cmdInsert = new SqlCommand(insertSkill, connection, transaction))
+                                    {
+                                        cmdInsert.Parameters.AddWithValue("@Id", Guid.NewGuid());
+                                        cmdInsert.Parameters.AddWithValue("@CVId", currentCvId);
+                                        cmdInsert.Parameters.AddWithValue("@SkillName", (object)skill.SkillName ?? string.Empty);
+                                        cmdInsert.Parameters.AddWithValue("@Level", (object)skill.Level ?? string.Empty);
+                                        await cmdInsert.ExecuteNonQueryAsync();
+                                    }
+                                }
+                            }
+                        }
+
+                        transaction.Commit();
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
         }
     }
 }

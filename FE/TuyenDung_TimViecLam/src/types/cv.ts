@@ -35,6 +35,7 @@ export interface CV {
   isDefault: boolean;
   fullName: string;
   email: string;
+  gender: string;
   phone: string;
   address: string;
   dateOfBirth: string;

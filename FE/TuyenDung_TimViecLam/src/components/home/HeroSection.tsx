@@ -17,7 +17,7 @@ const HeroSection = () => {
                 </div>
 
                 {/* Hero Text Content */}
-                <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+                <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
                     {/* Badge */}
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/30 border border-indigo-500/20 backdrop-blur-md mb-8">
                         <span className="text-sm font-medium text-indigo-300 flex items-center gap-2 font-sans">
@@ -40,7 +40,7 @@ const HeroSection = () => {
 
             {/* 2. Overlapping Search Bar & Bottom Stats Section */}
             <section className="relative w-full bg-[#f8fafc] z-20 pb-16">
-                <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
 
                     {/* Search Bar Container (Floating exactly on the edge) */}
                     <div className="relative z-30 w-full max-w-5xl mx-auto bg-white p-2 rounded-2xl shadow-[0_12px_40px_rgb(0,0,0,0.12)] flex flex-col md:flex-row items-center border border-gray-100 font-sans -mt-[44px]">

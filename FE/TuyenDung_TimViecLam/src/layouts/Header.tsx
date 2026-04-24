@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ChevronDown, User, LogOut, Menu, X, History, Heart, LayoutDashboard } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { logout, getToken, getUserRole } from '../services/authService';
+import { logout, getToken, getUserRole, getUserId } from '../services/authService';
+import { getCVByUserId } from '../services/cvService';
 import { isTokenExpired } from '../utils/jwt';
 
 
@@ -10,6 +11,7 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const role = (getUserRole() || '').toUpperCase();
 
   // Debug: log role để kiểm tra tại sao không hiện menu
@@ -37,6 +39,34 @@ const Header = () => {
     const intervalId = setInterval(checkToken, 60 * 1000);
     return () => clearInterval(intervalId);
   }, []);
+
+  // Fetch avatar when logged in and listen for updates
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      const userId = getUserId();
+      if (userId && isLoggedIn) {
+        try {
+          const res = await getCVByUserId(userId);
+          if (res.success && res.data?.avatar) {
+            setAvatarUrl(`/images/avatar/${res.data.avatar}`);
+          }
+        } catch (e) {
+          console.error("Failed to fetch avatar for header", e);
+        }
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchAvatar();
+    } else {
+      setAvatarUrl(null);
+    }
+
+    const handleAvatarUpdate = () => fetchAvatar();
+    window.addEventListener('avatarUpdated', handleAvatarUpdate);
+    
+    return () => window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+  }, [isLoggedIn]);
 
   const handleLogout = () => {
     logout();
@@ -93,9 +123,15 @@ const Header = () => {
                   onMouseLeave={() => setShowDropdown(false)}
                 >
                   <button className="flex items-center gap-2 p-1.5 rounded-full hover:bg-gray-50 transition-colors outline-none cursor-pointer">
-                    <div className="w-9 h-9 rounded-full bg-linear-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white shadow-sm shadow-indigo-200">
-                      <User size={18} />
-                    </div>
+                    {avatarUrl ? (
+                      <div className="w-9 h-9 shrink-0 rounded-full overflow-hidden shadow-sm shadow-indigo-200 border-2 border-indigo-100 flex items-center justify-center">
+                        <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover aspect-square" />
+                      </div>
+                    ) : (
+                      <div className="w-9 h-9 shrink-0 rounded-full bg-linear-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white shadow-sm shadow-indigo-200">
+                        <User size={18} />
+                      </div>
+                    )}
                   </button>
 
                   {/* Dropdown Menu */}
@@ -226,9 +262,15 @@ const Header = () => {
                   className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                    <User size={18} />
-                  </div>
+                  {avatarUrl ? (
+                    <div className="w-8 h-8 shrink-0 rounded-full overflow-hidden border border-indigo-100 flex items-center justify-center">
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover aspect-square" />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 shrink-0 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                      <User size={18} />
+                    </div>
+                  )}
                   Trang cá nhân
                 </Link>
 

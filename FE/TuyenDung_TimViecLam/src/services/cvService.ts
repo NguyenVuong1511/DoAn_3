@@ -1,5 +1,5 @@
 import axiosInstance from './axiosInstance';
-import type { CVResponse } from '../types/cv';
+import type { CV, CVResponse } from '../types/cv';
 
 export async function getCVByUserId(userId: string): Promise<CVResponse> {
   const { data } = await axiosInstance.get<CVResponse>(`/cvs/user/${userId}`);
@@ -16,5 +16,10 @@ export async function uploadAvatar(userId: string, file: File): Promise<{ succes
       'Content-Type': 'multipart/form-data',
     },
   });
+  return data;
+}
+
+export async function updateCVDetail(userId: string, cvData: CV): Promise<CVResponse> {
+  const { data } = await axiosInstance.put<CVResponse>(`/cvs/user/${userId}`, cvData);
   return data;
 }

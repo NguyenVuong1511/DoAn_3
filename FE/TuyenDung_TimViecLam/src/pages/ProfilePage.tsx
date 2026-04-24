@@ -5,7 +5,7 @@ import {
   Mail, Phone, MapPin, Calendar, Briefcase, GraduationCap,
   PenLine, Camera, ExternalLink, Download, Loader2, X
 } from 'lucide-react';
-import { getCVByUserId, uploadAvatar } from '../services/cvService';
+import { getCVByUserId, uploadAvatar, updateCVDetail } from '../services/cvService';
 import { getUserId } from '../services/authService';
 import type { CV } from '../types/cv';
 
@@ -13,6 +13,29 @@ const ProfilePage = () => {
   const [cvData, setCvData] = useState<CV | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Edit Modals State
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Basic Info
+  const [isBasicInfoModalOpen, setIsBasicInfoModalOpen] = useState(false);
+  const [draftBasicInfo, setDraftBasicInfo] = useState<Partial<CV>>({});
+
+  // About Me
+  const [isAboutMeModalOpen, setIsAboutMeModalOpen] = useState(false);
+  const [draftAboutMe, setDraftAboutMe] = useState('');
+
+  // Experience
+  const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
+  const [draftExperiences, setDraftExperiences] = useState<CV['experiences']>([]);
+
+  // Education
+  const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
+  const [draftEducations, setDraftEducations] = useState<CV['educations']>([]);
+
+  // Skills
+  const [isSkillsModalOpen, setIsSkillsModalOpen] = useState(false);
+  const [draftSkills, setDraftSkills] = useState<CV['skills']>([]);
 
   // Avatar upload state
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
@@ -40,15 +63,16 @@ const ProfilePage = () => {
 
   const handleUploadAvatar = async () => {
     if (!selectedFile) return;
-    
+
     setIsUploading(true);
     try {
       const userId = getUserId();
       if (!userId) return;
-      
+
       const response = await uploadAvatar(userId, selectedFile);
       if (response.success && response.data) {
         setCvData(prev => prev ? { ...prev, avatar: response.data as string } : prev);
+        window.dispatchEvent(new Event('avatarUpdated'));
         closeAvatarModal();
       } else {
         alert('Lỗi tải ảnh: ' + response.message);
@@ -60,6 +84,55 @@ const ProfilePage = () => {
     }
   };
 
+  const handleSaveSection = async (dataToUpdate: Partial<CV>, closeAction: () => void) => {
+    if (!cvData) return;
+    const userId = getUserId();
+    if (!userId) return;
+
+    setIsSaving(true);
+    try {
+      const updatedCv = { ...cvData, ...dataToUpdate };
+
+      // Clean empty string dates to null to prevent ASP.NET Core binding errors
+      const sanitizeDate = (dateVal: any) => dateVal === '' ? null : dateVal;
+      
+      const payload: any = {
+        ...updatedCv,
+        dateOfBirth: sanitizeDate(updatedCv.dateOfBirth),
+        uploadDate: sanitizeDate(updatedCv.uploadDate),
+        experiences: updatedCv.experiences?.map(exp => ({
+          ...exp,
+          startDate: sanitizeDate(exp.startDate),
+          endDate: sanitizeDate(exp.endDate)
+        })),
+        educations: updatedCv.educations?.map(edu => ({
+          ...edu,
+          startDate: sanitizeDate(edu.startDate),
+          endDate: sanitizeDate(edu.endDate)
+        }))
+      };
+
+      const response = await updateCVDetail(userId, payload);
+      if (response.success) {
+        setCvData(payload);
+        closeAction();
+      } else {
+        alert('Lỗi cập nhật: ' + response.message);
+      }
+    } catch (err: any) {
+      console.error("Lỗi cập nhật API:", err.response?.data || err);
+      const backendMessage = typeof err.response?.data === 'string' ? err.response.data : err.response?.data?.message;
+      alert('Đã xảy ra lỗi khi cập nhật hồ sơ: ' + (backendMessage || err.message || 'Lỗi không xác định'));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveAboutMe = () => handleSaveSection({ aboutMe: draftAboutMe }, () => setIsAboutMeModalOpen(false));
+  const handleSaveBasicInfo = () => handleSaveSection(draftBasicInfo, () => setIsBasicInfoModalOpen(false));
+  const handleSaveExperiences = () => handleSaveSection({ experiences: draftExperiences }, () => setIsExperienceModalOpen(false));
+  const handleSaveEducations = () => handleSaveSection({ educations: draftEducations }, () => setIsEducationModalOpen(false));
+  const handleSaveSkills = () => handleSaveSection({ skills: draftSkills }, () => setIsSkillsModalOpen(false));
   useEffect(() => {
     if (error) {
       console.error("ProfilePage error:", error);
@@ -133,15 +206,15 @@ const ProfilePage = () => {
             <div className="absolute inset-0 bg-linear-to-r from-purple-900/40 to-blue-900/40" />
           </div>
 
-          <div className="relative z-10 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center pt-8">
-            <h1 className="text-3xl md:text-5xl font-black font-display text-white tracking-tight leading-tight">
+          <div className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center pt-8">
+            <h1 className="text-3xl md:text-5xl font-black font-display text-white tracking-tight leading-tight mb-[40px]">
               Hồ sơ <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-blue-400">Cá nhân</span>
             </h1>
           </div>
         </section>
 
         {/* Profile Content Container (Overlapping the Banner) */}
-        <div className="relative z-20 max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-8 -mt-[120px]">
+        <div className="relative z-20 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 -mt-[120px]">
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
@@ -149,7 +222,25 @@ const ProfilePage = () => {
             <div className="lg:col-span-4 lg:col-start-1 flex flex-col gap-6">
 
               {/* Profile Card */}
-              <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 flex flex-col items-center text-center">
+              <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 flex flex-col items-center text-center group relative">
+                <button 
+                  onClick={() => {
+                    setDraftBasicInfo({
+                      fullName: cvData?.fullName || '',
+                      title: cvData?.title || '',
+                      phone: cvData?.phone || '',
+                      address: cvData?.address || '',
+                      dateOfBirth: cvData?.dateOfBirth || '',
+                      github: cvData?.github || '',
+                      linkedIn: cvData?.linkedIn || '',
+                      website: cvData?.website || ''
+                    });
+                    setIsBasicInfoModalOpen(true);
+                  }}
+                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                >
+                  <PenLine size={18} />
+                </button>
 
                 {/* Avatar with floating edit button */}
                 <div className="relative mb-5 group">
@@ -160,14 +251,14 @@ const ProfilePage = () => {
                       className="w-full h-full rounded-full object-cover"
                     />
                   </div>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    ref={fileInputRef} 
-                    onChange={handleFileChange} 
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
                   />
-                  <button 
+                  <button
                     onClick={() => fileInputRef.current?.click()}
                     className="absolute bottom-1 right-1 w-9 h-9 bg-linear-to-r from-purple-500 to-blue-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
                   >
@@ -175,7 +266,7 @@ const ProfilePage = () => {
                   </button>
                 </div>
 
-                <h2 className="text-2xl font-black font-display text-gray-900 mb-1 leading-tight">{displayName}</h2>
+                <h2 className="text-2xl font-black font-display text-gray-900 mb-1 leading-tight">{displayName} {cvData?.gender === 'Nam' ? '♂️' : cvData?.gender === 'Nữ' ? '♀️' : 'Khác'}</h2>
                 <p className="text-[15px] font-medium text-indigo-600 mb-5">{displayTitle}</p>
 
                 <div className="w-full flex gap-3 mb-6">
@@ -251,22 +342,6 @@ const ProfilePage = () => {
 
               </div>
 
-              {/* Profile Completion Card (Optional engagement element) */}
-              <div className="bg-linear-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white shadow-lg overflow-hidden relative">
-                {/* Decorative circles */}
-                <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-white/10 blur-xl"></div>
-                <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-white/10 blur-xl"></div>
-
-                <h3 className="text-lg font-bold font-display mb-1 relative z-10">Hồ sơ của bạn</h3>
-                <p className="text-indigo-100 text-sm mb-4 relative z-10">Mức độ hoàn thiện: 85%</p>
-                <div className="w-full bg-black/20 rounded-full h-2 mb-4 relative z-10 backdrop-blur-xs">
-                  <div className="bg-white h-2 rounded-full" style={{ width: '85%' }}></div>
-                </div>
-                <button className="text-xs font-bold uppercase tracking-wider bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-md text-white py-2 px-4 rounded-lg w-full cursor-pointer relative z-10">
-                  Cập nhật thêm
-                </button>
-              </div>
-
             </div>
 
             {/* RIGHT COLUMN: Main Content Sections */}
@@ -274,7 +349,13 @@ const ProfilePage = () => {
 
               {/* Introduction Section */}
               <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 group relative">
-                <button className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100">
+                <button 
+                  onClick={() => {
+                    setDraftAboutMe(cvData?.aboutMe || '');
+                    setIsAboutMeModalOpen(true);
+                  }}
+                  className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100"
+                >
                   <PenLine size={18} />
                 </button>
                 <h3 className="text-xl font-bold font-display text-gray-900 mb-4 pb-2 border-b border-gray-100 flex items-center gap-3">
@@ -288,7 +369,13 @@ const ProfilePage = () => {
 
               {/* Experience Section */}
               <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 group relative">
-                <button className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100">
+                <button 
+                  onClick={() => {
+                    setDraftExperiences(cvData?.experiences || []);
+                    setIsExperienceModalOpen(true);
+                  }}
+                  className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                >
                   <PenLine size={18} />
                 </button>
                 <h3 className="text-xl font-bold font-display text-gray-900 mb-6 pb-2 border-b border-gray-100 flex items-center gap-3">
@@ -330,7 +417,13 @@ const ProfilePage = () => {
 
                 {/* Education Section */}
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 group relative">
-                  <button className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100">
+                  <button 
+                    onClick={() => {
+                      setDraftEducations(cvData?.educations || []);
+                      setIsEducationModalOpen(true);
+                    }}
+                    className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                  >
                     <PenLine size={18} />
                   </button>
                   <h3 className="text-xl font-bold font-display text-gray-900 mb-6 pb-2 border-b border-gray-100 flex items-center gap-3">
@@ -359,7 +452,13 @@ const ProfilePage = () => {
 
                 {/* Skills Section */}
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 group relative">
-                  <button className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100">
+                  <button 
+                    onClick={() => {
+                      setDraftSkills(cvData?.skills || []);
+                      setIsSkillsModalOpen(true);
+                    }}
+                    className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                  >
                     <PenLine size={18} />
                   </button>
                   <h3 className="text-xl font-bold font-display text-gray-900 mb-6 pb-2 border-b border-gray-100 flex items-center gap-3">
@@ -397,7 +496,7 @@ const ProfilePage = () => {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <h3 className="text-lg font-bold text-gray-900 font-display">Cập nhật ảnh đại diện</h3>
-              <button 
+              <button
                 onClick={closeAvatarModal}
                 disabled={isUploading}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer"
@@ -405,12 +504,12 @@ const ProfilePage = () => {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="p-6 flex flex-col items-center">
               <p className="text-sm text-gray-500 mb-6 text-center">
                 Vui lòng căn chỉnh hình ảnh sao cho khuôn mặt nằm ở vị trí trung tâm để có kết quả tốt nhất.
               </p>
-              
+
               <div className="w-40 h-40 rounded-full border-4 border-indigo-50 shadow-lg overflow-hidden mb-6 bg-gray-50">
                 {previewUrl ? (
                   <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -423,14 +522,14 @@ const ProfilePage = () => {
             </div>
 
             <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end">
-              <button 
+              <button
                 onClick={closeAvatarModal}
                 disabled={isUploading}
                 className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
               >
                 Hủy bỏ
               </button>
-              <button 
+              <button
                 onClick={handleUploadAvatar}
                 disabled={isUploading}
                 className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-linear-to-r from-purple-500 to-blue-500 hover:opacity-90 shadow-sm shadow-indigo-200 transition-all cursor-pointer flex items-center gap-2"
@@ -443,6 +542,293 @@ const ProfilePage = () => {
                 ) : (
                   'Lưu thay đổi'
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Basic Info Edit Modal */}
+      {isBasicInfoModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 overflow-y-auto py-10">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 sticky top-0 z-10">
+              <h3 className="text-lg font-bold text-gray-900 font-display">Thông tin cá nhân</h3>
+              <button onClick={() => setIsBasicInfoModalOpen(false)} disabled={isSaving} className="text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5 max-h-[70vh] overflow-y-auto">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-700">Họ và tên</label>
+                <input type="text" value={draftBasicInfo.fullName || ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, fullName: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-700">Chức danh</label>
+                <input type="text" value={draftBasicInfo.title || ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, title: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-700">Ngày sinh</label>
+                <input type="date" value={draftBasicInfo.dateOfBirth ? new Date(draftBasicInfo.dateOfBirth).toISOString().split('T')[0] : ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, dateOfBirth: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-700">Số điện thoại</label>
+                <input type="text" value={draftBasicInfo.phone || ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, phone: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+              </div>
+              <div className="flex flex-col gap-1.5 md:col-span-2">
+                <label className="text-sm font-semibold text-gray-700">Địa chỉ</label>
+                <input type="text" value={draftBasicInfo.address || ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, address: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+              </div>
+              <div className="flex flex-col gap-1.5 md:col-span-2 mt-2">
+                <h4 className="font-semibold text-gray-800 border-b pb-2 mb-2">Liên kết mạng xã hội</h4>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-700">GitHub</label>
+                <input type="text" value={draftBasicInfo.github || ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, github: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="https://github.com/..." />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-semibold text-gray-700">LinkedIn</label>
+                <input type="text" value={draftBasicInfo.linkedIn || ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, linkedIn: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="https://linkedin.com/in/..." />
+              </div>
+              <div className="flex flex-col gap-1.5 md:col-span-2">
+                <label className="text-sm font-semibold text-gray-700">Website cá nhân</label>
+                <input type="text" value={draftBasicInfo.website || ''} onChange={e => setDraftBasicInfo({...draftBasicInfo, website: e.target.value})} className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" placeholder="https://..." />
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end sticky bottom-0 z-10">
+              <button onClick={() => setIsBasicInfoModalOpen(false)} disabled={isSaving} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer">Hủy bỏ</button>
+              <button onClick={handleSaveBasicInfo} disabled={isSaving} className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-linear-to-r from-purple-500 to-blue-500 hover:opacity-90 shadow-sm shadow-indigo-200 transition-all cursor-pointer flex items-center gap-2">
+                {isSaving ? <><Loader2 size={16} className="animate-spin" />Đang lưu...</> : 'Lưu thay đổi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* About Me Edit Modal */}
+      {isAboutMeModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900 font-display">Giới thiệu bản thân</h3>
+              <button
+                onClick={() => setIsAboutMeModalOpen(false)}
+                disabled={isSaving}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 flex flex-col">
+              <label className="text-sm font-semibold text-gray-700 mb-2">Thông tin giới thiệu</label>
+              <textarea
+                value={draftAboutMe}
+                onChange={(e) => setDraftAboutMe(e.target.value)}
+                placeholder="Viết vài dòng giới thiệu về bản thân, kinh nghiệm và mục tiêu nghề nghiệp của bạn..."
+                className="w-full h-40 px-4 py-3 border border-gray-200 rounded-xl text-gray-800 text-[15px] leading-relaxed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-none"
+              />
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end">
+              <button
+                onClick={() => setIsAboutMeModalOpen(false)}
+                disabled={isSaving}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={handleSaveAboutMe}
+                disabled={isSaving}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-linear-to-r from-purple-500 to-blue-500 hover:opacity-90 shadow-sm shadow-indigo-200 transition-all cursor-pointer flex items-center gap-2"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Đang lưu...
+                  </>
+                ) : (
+                  'Lưu thay đổi'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Experience Edit Modal */}
+      {isExperienceModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 overflow-y-auto py-10">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 sticky top-0 z-10">
+              <h3 className="text-lg font-bold text-gray-900 font-display">Kinh nghiệm làm việc</h3>
+              <button onClick={() => setIsExperienceModalOpen(false)} disabled={isSaving} className="text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 flex flex-col gap-6 max-h-[70vh] overflow-y-auto bg-gray-50/30">
+              {draftExperiences.map((exp, index) => (
+                <div key={exp.id || index} className="bg-white p-5 border border-gray-200 rounded-xl relative shadow-sm">
+                  <button 
+                    onClick={() => setDraftExperiences(draftExperiences.filter((_, i) => i !== index))}
+                    className="absolute top-5 right-5 text-gray-400 hover:text-red-500 p-1 bg-gray-50 rounded-md transition-colors cursor-pointer"
+                  >
+                    <X size={16} />
+                  </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
+                      <label className="text-sm font-semibold text-gray-700">Công ty</label>
+                      <input type="text" value={exp.companyName || ''} onChange={e => { const newExp = [...draftExperiences]; newExp[index].companyName = e.target.value; setDraftExperiences(newExp); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
+                      <label className="text-sm font-semibold text-gray-700">Vị trí / Chức vụ</label>
+                      <input type="text" value={exp.position || ''} onChange={e => { const newExp = [...draftExperiences]; newExp[index].position = e.target.value; setDraftExperiences(newExp); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-700">Từ ngày</label>
+                      <input type="date" value={exp.startDate ? new Date(exp.startDate).toISOString().split('T')[0] : ''} onChange={e => { const newExp = [...draftExperiences]; newExp[index].startDate = e.target.value; setDraftExperiences(newExp); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-700">Đến ngày</label>
+                      <input type="date" value={exp.endDate ? new Date(exp.endDate).toISOString().split('T')[0] : ''} onChange={e => { const newExp = [...draftExperiences]; newExp[index].endDate = e.target.value || null; setDraftExperiences(newExp); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
+                      <label className="text-sm font-semibold text-gray-700">Mô tả công việc</label>
+                      <textarea value={exp.description || ''} onChange={e => { const newExp = [...draftExperiences]; newExp[index].description = e.target.value; setDraftExperiences(newExp); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all h-24 resize-none" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <button 
+                onClick={() => setDraftExperiences([...draftExperiences, { id: crypto.randomUUID(), cvId: cvData?.id || '00000000-0000-0000-0000-000000000000', companyName: '', position: '', startDate: '', endDate: null, description: '' }])} 
+                className="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                + Thêm kinh nghiệm làm việc
+              </button>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end sticky bottom-0 z-10">
+              <button onClick={() => setIsExperienceModalOpen(false)} disabled={isSaving} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer">Hủy bỏ</button>
+              <button onClick={handleSaveExperiences} disabled={isSaving} className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-linear-to-r from-purple-500 to-blue-500 hover:opacity-90 shadow-sm shadow-indigo-200 transition-all cursor-pointer flex items-center gap-2">
+                {isSaving ? <><Loader2 size={16} className="animate-spin" />Đang lưu...</> : 'Lưu thay đổi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Education Edit Modal */}
+      {isEducationModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 overflow-y-auto py-10">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 sticky top-0 z-10">
+              <h3 className="text-lg font-bold text-gray-900 font-display">Học vấn</h3>
+              <button onClick={() => setIsEducationModalOpen(false)} disabled={isSaving} className="text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 flex flex-col gap-6 max-h-[70vh] overflow-y-auto bg-gray-50/30">
+              {draftEducations.map((edu, index) => (
+                <div key={edu.id || index} className="bg-white p-5 border border-gray-200 rounded-xl relative shadow-sm">
+                  <button 
+                    onClick={() => setDraftEducations(draftEducations.filter((_, i) => i !== index))}
+                    className="absolute top-5 right-5 text-gray-400 hover:text-red-500 p-1 bg-gray-50 rounded-md transition-colors cursor-pointer"
+                  >
+                    <X size={16} />
+                  </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
+                      <label className="text-sm font-semibold text-gray-700">Trường</label>
+                      <input type="text" value={edu.schoolName || ''} onChange={e => { const newEdu = [...draftEducations]; newEdu[index].schoolName = e.target.value; setDraftEducations(newEdu); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
+                      <label className="text-sm font-semibold text-gray-700">Chuyên ngành</label>
+                      <input type="text" value={edu.major || ''} onChange={e => { const newEdu = [...draftEducations]; newEdu[index].major = e.target.value; setDraftEducations(newEdu); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-700">Từ ngày</label>
+                      <input type="date" value={edu.startDate ? new Date(edu.startDate).toISOString().split('T')[0] : ''} onChange={e => { const newEdu = [...draftEducations]; newEdu[index].startDate = e.target.value; setDraftEducations(newEdu); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-semibold text-gray-700">Đến ngày</label>
+                      <input type="date" value={edu.endDate ? new Date(edu.endDate).toISOString().split('T')[0] : ''} onChange={e => { const newEdu = [...draftEducations]; newEdu[index].endDate = e.target.value; setDraftEducations(newEdu); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1.5 md:col-span-2">
+                      <label className="text-sm font-semibold text-gray-700">Mô tả thêm</label>
+                      <textarea value={edu.description || ''} onChange={e => { const newEdu = [...draftEducations]; newEdu[index].description = e.target.value; setDraftEducations(newEdu); }} className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all h-20 resize-none" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <button 
+                onClick={() => setDraftEducations([...draftEducations, { id: crypto.randomUUID(), cvId: cvData?.id || '00000000-0000-0000-0000-000000000000', schoolName: '', major: '', startDate: '', endDate: '', description: '' }])} 
+                className="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                + Thêm học vấn
+              </button>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end sticky bottom-0 z-10">
+              <button onClick={() => setIsEducationModalOpen(false)} disabled={isSaving} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer">Hủy bỏ</button>
+              <button onClick={handleSaveEducations} disabled={isSaving} className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-linear-to-r from-purple-500 to-blue-500 hover:opacity-90 shadow-sm shadow-indigo-200 transition-all cursor-pointer flex items-center gap-2">
+                {isSaving ? <><Loader2 size={16} className="animate-spin" />Đang lưu...</> : 'Lưu thay đổi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Skills Edit Modal */}
+      {isSkillsModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 overflow-y-auto py-10">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 sticky top-0 z-10">
+              <h3 className="text-lg font-bold text-gray-900 font-display">Kỹ năng</h3>
+              <button onClick={() => setIsSkillsModalOpen(false)} disabled={isSaving} className="text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
+              {draftSkills.map((skill, index) => (
+                <div key={skill.id || index} className="flex gap-3 items-center">
+                  <div className="flex-1">
+                    <input type="text" placeholder="Tên kỹ năng (VD: React, Tiếng Anh)" value={skill.skillName || ''} onChange={e => { const newSkills = [...draftSkills]; newSkills[index].skillName = e.target.value; setDraftSkills(newSkills); }} className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all" />
+                  </div>
+                  <div className="w-1/3">
+                    <select value={skill.level || 'Cơ bản'} onChange={e => { const newSkills = [...draftSkills]; newSkills[index].level = e.target.value; setDraftSkills(newSkills); }} className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer">
+                      <option value="Cơ bản">Cơ bản</option>
+                      <option value="Trung bình">Trung bình</option>
+                      <option value="Khá">Khá</option>
+                      <option value="Tốt">Tốt</option>
+                      <option value="Xuất sắc">Xuất sắc</option>
+                    </select>
+                  </div>
+                  <button onClick={() => setDraftSkills(draftSkills.filter((_, i) => i !== index))} className="text-gray-400 hover:text-red-500 p-2 bg-gray-50 rounded-lg transition-colors cursor-pointer">
+                    <X size={18} />
+                  </button>
+                </div>
+              ))}
+              
+              <button 
+                onClick={() => setDraftSkills([...draftSkills, { id: crypto.randomUUID(), cvId: cvData?.id || '00000000-0000-0000-0000-000000000000', skillName: '', level: 'Cơ bản' }])} 
+                className="w-full py-3 mt-2 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                + Thêm kỹ năng
+              </button>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end sticky bottom-0 z-10">
+              <button onClick={() => setIsSkillsModalOpen(false)} disabled={isSaving} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer">Hủy bỏ</button>
+              <button onClick={handleSaveSkills} disabled={isSaving} className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-linear-to-r from-purple-500 to-blue-500 hover:opacity-90 shadow-sm shadow-indigo-200 transition-all cursor-pointer flex items-center gap-2">
+                {isSaving ? <><Loader2 size={16} className="animate-spin" />Đang lưu...</> : 'Lưu thay đổi'}
               </button>
             </div>
           </div>

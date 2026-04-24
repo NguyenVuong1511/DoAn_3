@@ -57,7 +57,7 @@ const RecruiterProfilePage = () => {
         </section>
 
         {/* Floating Content Area */}
-        <div className="relative z-20 max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-8 -mt-[80px]">
+        <div className="relative z-20 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 -mt-[80px]">
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
