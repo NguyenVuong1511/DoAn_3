@@ -45,7 +45,25 @@
         "Get"
       ]
     },
-    // 4.JobPosts (Danh sách bài đăng)
+    // 4.CVs (Hồ sơ ứng viên)
+    {
+      "DownstreamPathTemplate": "/api/cvs/{catchAll}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/cvs/{catchAll}",
+      "UpstreamHttpMethod": [
+        "Get",
+        "Post",
+        "Put",
+        "Delete"
+      ]
+    },
+    // 5.JobPosts (Danh sách bài đăng)
     {
       "DownstreamPathTemplate": "/api/jobposts",
       "DownstreamScheme": "https",
