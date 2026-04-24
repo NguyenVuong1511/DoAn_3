@@ -39,7 +39,7 @@ const HeroSection = () => {
             </section>
 
             {/* 2. Overlapping Search Bar & Bottom Stats Section */}
-            <section className="relative w-full bg-white z-20 pb-16">
+            <section className="relative w-full bg-[#f8fafc] z-20 pb-16">
                 <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
 
                     {/* Search Bar Container (Floating exactly on the edge) */}

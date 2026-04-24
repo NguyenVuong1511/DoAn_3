@@ -77,7 +77,7 @@ const JobCard = ({ job, index = 0 }: JobCardProps) => {
                         </div>
                     </div>
                     <div>
-                        <h3 className="font-bold text-gray-900 text-[16px] line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                        <h3 className="font-bold text-gray-900 text-[16px] line-clamp-1 group-hover:text-indigo-600 transition-colors" title={job.companyName}>
                             {job.companyName}
                         </h3>
                         <div className="flex items-center gap-1.5 text-gray-400 text-xs mt-1">

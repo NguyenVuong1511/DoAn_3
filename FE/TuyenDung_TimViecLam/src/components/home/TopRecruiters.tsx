@@ -33,7 +33,7 @@ const TopRecruiters = () => {
     }
 
     return (
-        <section className="w-full bg-slate-50 py-16 md:py-24 font-sans overflow-hidden">
+        <section className="w-full bg-white py-16 md:py-24 font-sans overflow-hidden">
             <style>
                 {`
                     @keyframes scroll {

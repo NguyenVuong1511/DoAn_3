@@ -70,7 +70,7 @@ const JobCategories = () => {
     }
 
     return (
-        <section className="w-full bg-slate-50 py-16 md:py-24 font-sans">
+        <section className="w-full bg-white py-16 md:py-24 font-sans">
             <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header Row */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
