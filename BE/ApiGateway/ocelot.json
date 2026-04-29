@@ -45,6 +45,21 @@
         "Get"
       ]
     },
+    // 3.1 Locations (Địa điểm)
+    {
+      "DownstreamPathTemplate": "/api/locations",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/locations",
+      "UpstreamHttpMethod": [
+        "Get"
+      ]
+    },
     // 4.CVs (Hồ sơ ứng viên)
     {
       "DownstreamPathTemplate": "/api/cvs/{catchAll}",

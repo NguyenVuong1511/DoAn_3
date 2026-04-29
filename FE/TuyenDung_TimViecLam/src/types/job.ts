@@ -49,3 +49,11 @@ export interface ApiResponse<T> {
     message: string;
     data: T;
 }
+
+export interface Category {
+    id: string;
+    name: string;
+    iconName: string;
+    color: string;
+    bgColor: string;
+}
