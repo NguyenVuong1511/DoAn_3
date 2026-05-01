@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
-  Calendar, MapPin, Briefcase, Clock, DollarSign, Users,
+  MapPin, Clock, DollarSign, Users,
   Award, Layers, ChevronLeft, Heart, Share2, Send,
   Building2, Globe, Phone, Info, Loader2, AlertCircle,
-  CheckCircle2, ArrowRight
+  ArrowRight
 } from 'lucide-react';
 import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
@@ -13,7 +13,6 @@ import { toggleSavedJob, checkIsSaved } from '../services/jobService';
 import { getUserId } from '../services/authService';
 import type { Job } from '../types/job';
 import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
 
 const JobDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -123,7 +122,7 @@ const JobDetailPage = () => {
 
       <main className="flex-1 w-full pb-24">
         {/* Hero Header Section */}
-        <div className="bg-[#0f172a] relative overflow-hidden pt-20 pb-32">
+        <div className="bg-dark relative overflow-hidden pt-20 pb-32">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_30%,rgba(79,70,229,0.4),transparent_50%)]"></div>
             <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_80%_70%,rgba(236,72,153,0.3),transparent_50%)]"></div>

@@ -73,11 +73,6 @@ const JobCard = ({ job, index = 0 }: JobCardProps) => {
         return date.toLocaleDateString('vi-VN');
     };
 
-    const getLogoUrl = (logo: string) => {
-        if (!logo) return null;
-        if (logo.startsWith('http')) return logo;
-        return `/images/${logo}`;
-    };
 
     const getLogoPlaceholder = (name: string) => {
         return name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';

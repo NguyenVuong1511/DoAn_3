@@ -55,7 +55,7 @@ const JobFilters: React.FC<JobFiltersProps> = ({ onFilterChange }) => {
     const handleSalaryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const range = e.target.value;
         setSalaryRange(range);
-        
+
         let min: number | undefined;
         let max: number | undefined;
 
@@ -227,7 +227,7 @@ const JobFilters: React.FC<JobFiltersProps> = ({ onFilterChange }) => {
                                 );
                                 onFilterChange(cleanFilters);
                             }}
-                            className="flex-[2] h-full py-3.5 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 transition-all flex items-center justify-center gap-2"
+                            className="flex-2 h-full py-3.5 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 transition-all flex items-center justify-center gap-2"
                         >
                             <Search size={14} />
                             Tìm kiếm

@@ -6,7 +6,7 @@ import JobFilters from '../components/jobs/JobFilters';
 import JobPagination from '../components/jobs/JobPagination';
 import { getJobs } from '../services/jobService';
 import type { Job, JobParams } from '../types/job';
-import { Loader2, Briefcase, Search, Filter } from 'lucide-react';
+import { Loader2, Briefcase, Search } from 'lucide-react';
 
 const JobListPage = () => {
     const [jobs, setJobs] = useState<Job[]>([]);
@@ -19,7 +19,6 @@ const JobListPage = () => {
         pageSize: 9
     });
     const [filters, setFilters] = useState<JobParams>({});
-    const [showMobileFilters, setShowMobileFilters] = useState(false);
 
     const fetchJobs = useCallback(async (page: number, currentFilters: JobParams) => {
         try {
@@ -67,13 +66,13 @@ const JobListPage = () => {
 
             <main className="flex-1 w-full pb-20">
                 {/* Hero Banner Section */}
-                <div className="relative w-full h-[300px] md:h-[400px] overflow-hidden bg-[#0f172a]">
+                <div className="relative w-full h-[300px] md:h-[400px] overflow-hidden bg-dark">
                     <div
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60 mix-blend-luminosity"
                         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2670&ixlib=rb-4.0.3")' }}
                     />
                     <div className="absolute inset-0 bg-linear-to-tr from-indigo-900 via-slate-900/40 to-transparent" />
-                    
+
                     <div className="absolute inset-0 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-start pointer-events-none">
                         <div className="flex flex-col gap-4">
                             <div className="px-6 py-4 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl inline-flex items-center gap-4">
@@ -89,7 +88,7 @@ const JobListPage = () => {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="absolute bottom-0 left-0 w-full h-32 bg-linear-to-t from-[#f8fafc] to-transparent" />
                 </div>
 

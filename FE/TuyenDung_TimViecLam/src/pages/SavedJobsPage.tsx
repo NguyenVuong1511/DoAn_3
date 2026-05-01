@@ -24,7 +24,7 @@ const SavedJobsPage = () => {
 
     const fetchSavedJobs = useCallback(async (page: number) => {
         if (!userId) return;
-        
+
         try {
             setLoading(true);
             const response = await getSavedJobs(userId, page, pagination.pageSize);
@@ -65,14 +65,14 @@ const SavedJobsPage = () => {
 
             <main className="flex-1 w-full pb-20">
                 {/* Hero Section */}
-                <div className="bg-[#0f172a] relative overflow-hidden py-20">
+                <div className="bg-dark relative overflow-hidden py-20">
                     <div className="absolute inset-0 opacity-20">
                         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.4),transparent_50%)]"></div>
                     </div>
-                    
+
                     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                        <Link 
-                            to="/jobs" 
+                        <Link
+                            to="/jobs"
                             className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 font-bold text-sm mb-6 transition-colors group"
                         >
                             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
