@@ -43,6 +43,13 @@ export async function checkIsSaved(userId: string, jobPostId: string) {
     return data;
 }
 
+export async function getSavedJobs(userId: string, pageNumber: number = 1, pageSize: number = 9) {
+    const { data } = await axiosInstance.get<ApiResponse<JobResponse>>(`/savedjobs/user/${userId}`, {
+        params: { pageNumber, pageSize }
+    });
+    return data;
+}
+
 export async function getLevels() {
     const { data } = await axiosInstance.get<ApiResponse<Level[]>>('/metadata/levels');
     return data;

@@ -15,12 +15,23 @@ namespace TuyenDung_TimViec.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetSavedJobs(Guid userId)
+        public async Task<IActionResult> GetSavedJobs(
+            Guid userId, 
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 9)
         {
             try
             {
-                var jobs = await _savedJobRepository.GetSavedJobsAsync(userId);
-                return Ok(RepositoryResult<object>.Ok(jobs, "Lấy danh sách việc làm đã lưu thành công!"));
+                var (jobs, totalCount) = await _savedJobRepository.GetPagedSavedJobsAsync(userId, pageNumber, pageSize);
+                var result = new
+                {
+                    Jobs = jobs,
+                    TotalCount = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+                };
+                return Ok(RepositoryResult<object>.Ok(result, "Lấy danh sách việc làm đã lưu thành công!"));
             }
             catch (Exception ex)
             {

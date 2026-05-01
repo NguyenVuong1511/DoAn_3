@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, ArrowRight, Briefcase, DollarSign, Clock } from 'lucide-react';
+import { Heart, MapPin, ArrowRight, Briefcase, DollarSign, Clock, Award, Layers } from 'lucide-react';
 import type { Job } from '../../types/job';
 import { getUserId } from '../../services/authService';
 import { toggleSavedJob, checkIsSaved } from '../../services/jobService';
@@ -153,12 +153,14 @@ const JobCard = ({ job, index = 0 }: JobCardProps) => {
                     </div>
                 )}
                 {job.levelName && (
-                    <div className="px-3 py-1.5 rounded-lg bg-orange-50 text-orange-600 text-[11px] font-bold border border-orange-100">
+                    <div className="px-3 py-1.5 rounded-lg bg-orange-50 text-orange-600 text-[11px] font-bold flex items-center gap-1.5 border border-orange-100">
+                        <Layers size={12} />
                         {job.levelName}
                     </div>
                 )}
-                {!job.levelName && job.experienceName && (
-                    <div className="px-3 py-1.5 rounded-lg bg-orange-50 text-orange-600 text-[11px] font-bold border border-orange-100">
+                {job.experienceName && (
+                    <div className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-[11px] font-bold flex items-center gap-1.5 border border-emerald-100">
+                        <Award size={12} />
                         {job.experienceName}
                     </div>
                 )}

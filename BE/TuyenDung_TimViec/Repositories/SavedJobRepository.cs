@@ -7,7 +7,7 @@ namespace TuyenDung_TimViec.Repositories
     public interface ISavedJobRepository
     {
         Task<bool> ToggleSavedJobAsync(Guid userId, Guid jobPostId);
-        Task<List<JobPost>> GetSavedJobsAsync(Guid userId);
+        Task<(List<JobPost> Jobs, int TotalCount)> GetPagedSavedJobsAsync(Guid userId, int pageNumber, int pageSize);
         Task<bool> IsJobSavedAsync(Guid userId, Guid jobPostId);
     }
 
@@ -85,14 +85,17 @@ namespace TuyenDung_TimViec.Repositories
             }
         }
 
-        public async Task<List<JobPost>> GetSavedJobsAsync(Guid userId)
+        public async Task<(List<JobPost> Jobs, int TotalCount)> GetPagedSavedJobsAsync(Guid userId, int pageNumber, int pageSize)
         {
             var jobPosts = new List<JobPost>();
+            int totalCount = 0;
+            int offset = (pageNumber - 1) * pageSize;
+
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 Guid candidateId = await GetCandidateIdByUserIdAsync(userId, connection);
-                if (candidateId == Guid.Empty) return jobPosts;
+                if (candidateId == Guid.Empty) return (jobPosts, 0);
 
                 string query = @"
                     SELECT jp.*, 
@@ -107,11 +110,17 @@ namespace TuyenDung_TimViec.Repositories
                     LEFT JOIN Levels jl ON jp.LevelId = jl.Id
                     LEFT JOIN Experiences el ON jp.ExperienceId = el.Id
                     WHERE sj.CandidateId = @CandidateId
-                    ORDER BY sj.SavedDate DESC";
+                    ORDER BY sj.SavedDate DESC
+                    OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY;
+
+                    SELECT COUNT(*) FROM SavedJobs WHERE CandidateId = @CandidateId;";
 
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@CandidateId", candidateId);
+                    command.Parameters.AddWithValue("@offset", offset);
+                    command.Parameters.AddWithValue("@pageSize", pageSize);
+
                     using (SqlDataReader reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
@@ -131,10 +140,18 @@ namespace TuyenDung_TimViec.Repositories
                                 PostDate = reader.IsDBNull(reader.GetOrdinal("PostDate")) ? DateTime.MinValue : reader.GetDateTime(reader.GetOrdinal("PostDate"))
                             });
                         }
+
+                        if (await reader.NextResultAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                totalCount = reader.GetInt32(0);
+                            }
+                        }
                     }
                 }
             }
-            return jobPosts;
+            return (jobPosts, totalCount);
         }
     }
 }

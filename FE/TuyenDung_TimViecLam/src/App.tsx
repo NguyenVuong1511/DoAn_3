@@ -7,6 +7,7 @@ import RecruiterProfilePage from './pages/RecruiterProfilePage'
 import SettingsPage from './pages/SettingsPage'
 import LoginPage from './features/auth/LoginPage'
 import RegisterPage from './features/auth/RegisterPage'
+import SavedJobsPage from './pages/SavedJobsPage'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/saved-jobs" element={<SavedJobsPage />} />
       </Routes>
     </BrowserRouter>
   )
