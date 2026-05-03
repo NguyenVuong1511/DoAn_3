@@ -62,6 +62,20 @@ namespace TuyenDung_TimViec.Controllers
             }
         }
 
+        [HttpGet("company/{companyId}")]
+        public async Task<IActionResult> GetCompanyInterviews(Guid companyId)
+        {
+            try
+            {
+                var interviews = await _interviewRepo.GetInterviewsByCompanyIdAsync(companyId);
+                return Ok(new { success = true, data = interviews });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi khi lấy danh sách phỏng vấn của công ty: " + ex.Message });
+            }
+        }
+
         [HttpPut("status/{id}")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] string status)
         {
@@ -77,6 +91,25 @@ namespace TuyenDung_TimViec.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { success = false, message = "Lỗi khi cập nhật trạng thái: " + ex.Message });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateInterview(Guid id, [FromBody] Interview interview)
+        {
+            try
+            {
+                interview.Id = id;
+                bool result = await _interviewRepo.UpdateInterviewAsync(interview);
+                if (result)
+                {
+                    return Ok(new { success = true, message = "Cập nhật lịch phỏng vấn thành công." });
+                }
+                return NotFound(new { success = false, message = "Không tìm thấy lịch phỏng vấn." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi khi cập nhật lịch phỏng vấn: " + ex.Message });
             }
         }
     }

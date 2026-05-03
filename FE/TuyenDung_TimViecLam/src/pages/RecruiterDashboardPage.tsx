@@ -5,6 +5,7 @@ import { getUserId } from '../services/authService';
 import { getMyCompanyApi } from '../services/companyService';
 import { getJobsByCompanyId } from '../services/jobService';
 import { getApplicationsByCompanyApi } from '../services/applicationService';
+import { getInterviewsByCompanyApi, type Interview } from '../services/interviewService';
 import {
   LayoutDashboard,
   Briefcase,
@@ -22,12 +23,14 @@ import PostJobModal from '../components/recruiter/PostJobModal';
 import OverviewSection from '../components/recruiter/OverviewSection';
 import ManageJobsSection from '../components/recruiter/ManageJobsSection';
 import ApplicationsSection from '../components/recruiter/ApplicationsSection';
+import InterviewsSection from '../components/recruiter/InterviewsSection';
 
 const RecruiterDashboardPage = () => {
   const userId = getUserId();
   const [company, setCompany] = useState<any>(null);
   const [jobs, setJobs] = useState<any[]>([]);
   const [allApplications, setAllApplications] = useState<any[]>([]);
+  const [interviews, setInterviews] = useState<Interview[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPostJobModalOpen, setIsPostJobModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
@@ -52,6 +55,11 @@ const RecruiterDashboardPage = () => {
           const appsRes = await getApplicationsByCompanyApi(companyRes.data.id);
           if (appsRes.success) {
             setAllApplications(appsRes.data);
+          }
+
+          const intvRes = await getInterviewsByCompanyApi(companyRes.data.id);
+          if (intvRes.success) {
+            setInterviews(intvRes.data);
           }
         }
       }
@@ -128,7 +136,7 @@ const RecruiterDashboardPage = () => {
                 <SidebarItem icon={<LayoutDashboard size={20} />} label="Tổng quan" isActive={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
                 <SidebarItem icon={<Briefcase size={20} />} label="Tin tuyển dụng" isActive={activeTab === 'jobs'} onClick={() => setActiveTab('jobs')} badge={jobs.length} />
                 <SidebarItem icon={<Users size={20} />} label="Ứng viên" isActive={activeTab === 'candidates'} onClick={() => setActiveTab('candidates')} badge={allApplications.length} />
-                <SidebarItem icon={<Calendar size={20} />} label="Lịch phỏng vấn" />
+                <SidebarItem icon={<Calendar size={20} />} label="Lịch phỏng vấn" isActive={activeTab === 'interviews'} onClick={() => setActiveTab('interviews')} badge={interviews.length} />
                 <div className="h-px bg-slate-50 my-4 mx-4"></div>
                 <SidebarItem icon={<Settings size={20} />} label="Cài đặt tài khoản" />
               </div>
@@ -149,6 +157,7 @@ const RecruiterDashboardPage = () => {
               />
             )}
             {activeTab === 'candidates' && <ApplicationsSection jobs={jobs} allApplications={allApplications} refreshData={fetchDashboardData} />}
+            {activeTab === 'interviews' && <InterviewsSection interviews={interviews} refreshData={fetchDashboardData} />}
           </div>
         </div>
       </main>

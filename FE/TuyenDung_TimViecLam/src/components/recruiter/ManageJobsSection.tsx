@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { deleteJobApi, toggleJobStatusApi } from '../../services/jobService';
 import PostJobModal from './PostJobModal';
+import Pagination from '../common/Pagination';
 
 interface ManageJobsSectionProps {
   jobs: any[];
@@ -25,6 +26,13 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [editingJob, setEditingJob] = useState<any>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   const handleToggleStatus = async (jobId: string) => {
     try {
@@ -55,6 +63,9 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
     const matchesStatus = statusFilter === 'All' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
+  const currentJobs = filteredJobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -114,7 +125,7 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {filteredJobs.map((job) => {
+              {currentJobs.map((job) => {
                 const appCount = allApplications.filter(app => app.jobPostId === job.id).length;
                 const deadlineDate = new Date(job.deadline);
                 const isExpired = deadlineDate < new Date();
@@ -190,6 +201,14 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
             </tbody>
           </table>
         </div>
+        
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredJobs.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       <PostJobModal

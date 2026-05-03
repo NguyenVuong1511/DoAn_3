@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Users,
   Search,
@@ -9,10 +9,13 @@ import {
   FileSearch,
   MessageSquare,
   Briefcase,
-  ExternalLink
+  ExternalLink,
+  CalendarPlus
 } from 'lucide-react';
 import { updateApplicationStatusApi } from '../../services/applicationService';
 import CVFileViewer from '../common/CVFileViewer';
+import Pagination from '../common/Pagination';
+import ScheduleInterviewModal from './ScheduleInterviewModal';
 
 interface ApplicationsSectionProps {
   jobs: any[];
@@ -25,10 +28,21 @@ const ApplicationsSection = ({ jobs, allApplications, refreshData }: Application
   const [statusFilter, setStatusFilter] = useState('All');
   const [jobFilter, setJobFilter] = useState('All');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, jobFilter]);
+
   // CV Viewer state
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [viewerFileUrl, setViewerFileUrl] = useState('');
   const [viewerFileName, setViewerFileName] = useState('');
+
+  // Schedule Interview state
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const [selectedAppForSchedule, setSelectedAppForSchedule] = useState<any>(null);
 
   const handleUpdateStatus = async (appId: string, status: string) => {
     try {
@@ -50,6 +64,9 @@ const ApplicationsSection = ({ jobs, allApplications, refreshData }: Application
     const matchesJob = jobFilter === 'All' || app.jobPostId === jobFilter;
     return matchesSearch && matchesStatus && matchesJob;
   });
+
+  const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
+  const currentApps = filteredApps.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleViewCV = (app: any) => {
     if (app.cvType === 'Online') {
@@ -128,7 +145,7 @@ const ApplicationsSection = ({ jobs, allApplications, refreshData }: Application
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {filteredApps.map((app) => (
+              {currentApps.map((app) => (
                 <tr key={app.id} className="group hover:bg-slate-50/50 transition-colors">
                   <td className="py-6 px-4">
                     <div className="flex items-center gap-4">
@@ -205,6 +222,19 @@ const ApplicationsSection = ({ jobs, allApplications, refreshData }: Application
                         </>
                       )}
 
+                      {(!app.status || app.status === 'Pending' || app.status === 'Approved') && (
+                        <button
+                          onClick={() => {
+                            setSelectedAppForSchedule(app);
+                            setIsScheduleOpen(true);
+                          }}
+                          title="Hẹn phỏng vấn"
+                          className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white shadow-sm transition-all flex items-center justify-center cursor-pointer"
+                        >
+                          <CalendarPlus size={18} />
+                        </button>
+                      )}
+
                       <button
                         className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-indigo-600 transition-all flex items-center justify-center cursor-pointer"
                         title="Nhắn tin"
@@ -230,6 +260,14 @@ const ApplicationsSection = ({ jobs, allApplications, refreshData }: Application
             </tbody>
           </table>
         </div>
+        
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredApps.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
       <CVFileViewer
         isOpen={isViewerOpen}
@@ -237,6 +275,19 @@ const ApplicationsSection = ({ jobs, allApplications, refreshData }: Application
         fileUrl={viewerFileUrl}
         fileName={viewerFileName}
       />
+      {selectedAppForSchedule && (
+        <ScheduleInterviewModal
+          isOpen={isScheduleOpen}
+          onClose={() => {
+            setIsScheduleOpen(false);
+            setSelectedAppForSchedule(null);
+          }}
+          applicationId={selectedAppForSchedule.id}
+          candidateName={selectedAppForSchedule.candidateName || 'Ứng viên'}
+          jobTitle={selectedAppForSchedule.jobTitle || 'Công việc'}
+          onSuccess={refreshData}
+        />
+      )}
     </div>
   );
 };
@@ -245,11 +296,13 @@ const StatusBadge = ({ status }: { status: string }) => {
   const styles: any = {
     'Pending': 'bg-amber-50 text-amber-600 border-amber-100',
     'Approved': 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    'Interviewing': 'bg-blue-50 text-blue-600 border-blue-100',
     'Rejected': 'bg-rose-50 text-rose-600 border-rose-100'
   };
   const labels: any = {
     'Pending': 'Chờ duyệt',
     'Approved': 'Đã duyệt',
+    'Interviewing': 'Phỏng vấn',
     'Rejected': 'Từ chối'
   };
   return (
