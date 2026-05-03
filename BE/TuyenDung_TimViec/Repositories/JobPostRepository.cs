@@ -20,6 +20,10 @@ namespace TuyenDung_TimViec.Repositories
             decimal? maxSalary = null);
         Task<JobPost?> GetJobPostByIdAsync(Guid id);
         Task<List<JobPost>> GetJobPostsByCompanyIdAsync(Guid companyId);
+        Task<bool> CreateJobPostAsync(JobPost jobPost);
+        Task<bool> UpdateJobPostAsync(JobPost jobPost);
+        Task<bool> DeleteJobPostAsync(Guid id);
+        Task<bool> ToggleJobPostStatusAsync(Guid id);
     }
 
     public class JobPostRepository : IJobPostRepository
@@ -280,6 +284,107 @@ namespace TuyenDung_TimViec.Repositories
                 LevelName = reader.IsDBNull(reader.GetOrdinal("LevelName")) ? string.Empty : reader.GetString(reader.GetOrdinal("LevelName")),
                 ExperienceName = reader.IsDBNull(reader.GetOrdinal("ExperienceName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ExperienceName"))
             };
+        }
+
+        public async Task<bool> CreateJobPostAsync(JobPost jobPost)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = @"
+                    INSERT INTO JobPosts (Id, RecruiterId, CompanyId, CategoryId, LocationId, JobTypeId, LevelId, ExperienceId, Title, Description, Requirement, Benefit, MinSalary, MaxSalary, Quantity, PostDate, Deadline, Status)
+                    VALUES (@Id, @RecruiterId, @CompanyId, @CategoryId, @LocationId, @JobTypeId, @LevelId, @ExperienceId, @Title, @Description, @Requirement, @Benefit, @MinSalary, @MaxSalary, @Quantity, @PostDate, @Deadline, @Status)";
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", Guid.NewGuid());
+                    command.Parameters.AddWithValue("@RecruiterId", jobPost.RecruiterId);
+                    command.Parameters.AddWithValue("@CompanyId", jobPost.CompanyId);
+                    command.Parameters.AddWithValue("@CategoryId", jobPost.CategoryId);
+                    command.Parameters.AddWithValue("@LocationId", jobPost.LocationId);
+                    command.Parameters.AddWithValue("@JobTypeId", jobPost.JobTypeId);
+                    command.Parameters.AddWithValue("@LevelId", jobPost.LevelId);
+                    command.Parameters.AddWithValue("@ExperienceId", jobPost.ExperienceId);
+                    command.Parameters.AddWithValue("@Title", jobPost.Title);
+                    command.Parameters.AddWithValue("@Description", jobPost.Description);
+                    command.Parameters.AddWithValue("@Requirement", jobPost.Requirement);
+                    command.Parameters.AddWithValue("@Benefit", jobPost.Benefit);
+                    command.Parameters.AddWithValue("@MinSalary", jobPost.MinSalary);
+                    command.Parameters.AddWithValue("@MaxSalary", jobPost.MaxSalary);
+                    command.Parameters.AddWithValue("@Quantity", jobPost.Quantity);
+                    command.Parameters.AddWithValue("@PostDate", DateTime.Now);
+                    command.Parameters.AddWithValue("@Deadline", jobPost.Deadline);
+                    command.Parameters.AddWithValue("@Status", "Active");
+
+                    await connection.OpenAsync();
+                    int result = await command.ExecuteNonQueryAsync();
+                    return result > 0;
+                }
+            }
+        }
+
+        public async Task<bool> UpdateJobPostAsync(JobPost jobPost)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = @"
+                    UPDATE JobPosts 
+                    SET CategoryId = @CategoryId, LocationId = @LocationId, JobTypeId = @JobTypeId, LevelId = @LevelId, ExperienceId = @ExperienceId, 
+                        Title = @Title, Description = @Description, Requirement = @Requirement, Benefit = @Benefit, 
+                        MinSalary = @MinSalary, MaxSalary = @MaxSalary, Quantity = @Quantity, Deadline = @Deadline
+                    WHERE Id = @Id";
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", jobPost.Id);
+                    command.Parameters.AddWithValue("@CategoryId", jobPost.CategoryId);
+                    command.Parameters.AddWithValue("@LocationId", jobPost.LocationId);
+                    command.Parameters.AddWithValue("@JobTypeId", jobPost.JobTypeId);
+                    command.Parameters.AddWithValue("@LevelId", jobPost.LevelId);
+                    command.Parameters.AddWithValue("@ExperienceId", jobPost.ExperienceId);
+                    command.Parameters.AddWithValue("@Title", jobPost.Title);
+                    command.Parameters.AddWithValue("@Description", jobPost.Description);
+                    command.Parameters.AddWithValue("@Requirement", jobPost.Requirement);
+                    command.Parameters.AddWithValue("@Benefit", jobPost.Benefit);
+                    command.Parameters.AddWithValue("@MinSalary", jobPost.MinSalary);
+                    command.Parameters.AddWithValue("@MaxSalary", jobPost.MaxSalary);
+                    command.Parameters.AddWithValue("@Quantity", jobPost.Quantity);
+                    command.Parameters.AddWithValue("@Deadline", jobPost.Deadline);
+
+                    await connection.OpenAsync();
+                    int result = await command.ExecuteNonQueryAsync();
+                    return result > 0;
+                }
+            }
+        }
+
+        public async Task<bool> DeleteJobPostAsync(Guid id)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "DELETE FROM JobPosts WHERE Id = @Id";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+                    await connection.OpenAsync();
+                    int result = await command.ExecuteNonQueryAsync();
+                    return result > 0;
+                }
+            }
+        }
+
+        public async Task<bool> ToggleJobPostStatusAsync(Guid id)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "UPDATE JobPosts SET Status = CASE WHEN Status = 'Active' THEN 'Inactive' ELSE 'Active' END WHERE Id = @Id";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+                    await connection.OpenAsync();
+                    int result = await command.ExecuteNonQueryAsync();
+                    return result > 0;
+                }
+            }
         }
     }
 }

@@ -1,26 +1,32 @@
 import { useState } from 'react';
 import { 
-  Briefcase, 
   Search, 
   Filter, 
   ToggleRight, 
   ToggleLeft, 
-  Eye, 
   Edit, 
   Trash2,
-  PlusCircle
+  PlusCircle,
+  Calendar,
+  Users,
+  Eye
 } from 'lucide-react';
 import { deleteJobApi, toggleJobStatusApi } from '../../services/jobService';
+import PostJobModal from './PostJobModal';
 
 interface ManageJobsSectionProps {
   jobs: any[];
+  allApplications: any[];
   refreshData: () => void;
   onOpenPostJob: () => void;
+  userId: string;
+  companyId: string;
 }
 
-const ManageJobsSection = ({ jobs, refreshData, onOpenPostJob }: ManageJobsSectionProps) => {
+const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, userId, companyId }: ManageJobsSectionProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [editingJob, setEditingJob] = useState<any>(null);
 
   const handleToggleStatus = async (jobId: string) => {
     try {
@@ -104,47 +110,99 @@ const ManageJobsSection = ({ jobs, refreshData, onOpenPostJob }: ManageJobsSecti
               <tr className="text-left border-b border-slate-50">
                 <th className="pb-6 text-[10px] font-black text-gray-400 uppercase tracking-widest px-4">Tin đăng</th>
                 <th className="pb-6 text-[10px] font-black text-gray-400 uppercase tracking-widest px-4">Ngày đăng</th>
+                <th className="pb-6 text-[10px] font-black text-gray-400 uppercase tracking-widest px-4">Hạn nộp</th>
+                <th className="pb-6 text-[10px] font-black text-gray-400 uppercase tracking-widest px-4">Ứng tuyển</th>
                 <th className="pb-6 text-[10px] font-black text-gray-400 uppercase tracking-widest px-4 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {filteredJobs.map((job) => (
-                <tr key={job.id} className="group hover:bg-slate-50/50 transition-colors">
-                  <td className="py-6 px-4">
-                    <p className="font-black text-gray-900 text-base mb-1 group-hover:text-indigo-600 transition-colors">{job.title}</p>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{job.jobTypeName}</span>
-                  </td>
-                  <td className="py-6 px-4 font-bold text-gray-500 text-sm">
-                    {new Date(job.postDate).toLocaleDateString('vi-VN')}
-                  </td>
-                  <td className="py-6 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => handleToggleStatus(job.id)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border font-black text-[10px] uppercase tracking-wider transition-all cursor-pointer ${
-                          job.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-100 text-slate-500'
-                        }`}
-                      >
-                        {job.status === 'Active' ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
-                        {job.status === 'Active' ? 'Bật' : 'Ẩn'}
-                      </button>
-                      <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-amber-600 transition-all flex items-center justify-center">
-                        <Edit size={18} />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteJob(job.id)}
-                        className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-rose-600 transition-all flex items-center justify-center"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filteredJobs.map((job) => {
+                const appCount = allApplications.filter(app => app.jobPostId === job.id).length;
+                const deadlineDate = new Date(job.deadline);
+                const isExpired = deadlineDate < new Date();
+
+                return (
+                  <tr key={job.id} className="group hover:bg-slate-50/50 transition-colors">
+                    <td className="py-6 px-4">
+                      <p className="font-black text-gray-900 text-base mb-1 group-hover:text-indigo-600 transition-colors">{job.title}</p>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{job.jobTypeName}</span>
+                        <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{job.locationName}</span>
+                      </div>
+                    </td>
+                    <td className="py-6 px-4">
+                      <div className="flex flex-col gap-0.5">
+                        <p className="text-sm font-bold text-gray-600">{new Date(job.postDate).toLocaleDateString('vi-VN')}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Đã đăng</p>
+                      </div>
+                    </td>
+                    <td className="py-6 px-4">
+                      <div className="flex flex-col gap-0.5">
+                        <p className={`text-sm font-bold ${isExpired ? 'text-rose-500' : 'text-indigo-600'}`}>
+                          {deadlineDate.toLocaleDateString('vi-VN')}
+                        </p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">
+                          {isExpired ? 'Hết hạn' : 'Hạn chót'}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="py-6 px-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-xs">
+                          {appCount}
+                        </div>
+                        <span className="text-xs font-bold text-gray-400">Hồ sơ</span>
+                      </div>
+                    </td>
+                    <td className="py-6 px-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => window.open(`/jobs/${job.id}`, '_blank')}
+                          title="Xem trên website"
+                          className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-indigo-100"
+                        >
+                          <Eye size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleToggleStatus(job.id)}
+                          title={job.status === 'Active' ? 'Ẩn tin' : 'Hiện tin'}
+                          className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                            job.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                          }`}
+                        >
+                          {job.status === 'Active' ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                        </button>
+                        <button 
+                          onClick={() => setEditingJob(job)}
+                          className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-amber-100"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteJob(job.id)}
+                          className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-rose-100"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
+
+      <PostJobModal 
+        isOpen={!!editingJob}
+        onClose={() => setEditingJob(null)}
+        userId={userId}
+        companyId={companyId}
+        onSuccess={refreshData}
+        jobToEdit={editingJob}
+      />
     </div>
   );
 };

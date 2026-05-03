@@ -3,26 +3,20 @@ import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
 import { getUserId } from '../services/authService';
 import { getMyCompanyApi } from '../services/companyService';
-import { 
-  getCategories, 
-  getLocations, 
-  getLevels, 
-  getExperiences, 
+import {
+  getCategories,
+  getLocations,
+  getLevels,
+  getExperiences,
   getJobTypes,
   createJobApi
 } from '../services/jobService';
-import { 
-  LayoutDashboard, 
-  Briefcase, 
-  Users, 
-  Settings, 
-  PlusCircle, 
+import {
+  PlusCircle,
   Loader2,
-  ArrowLeft,
-  CheckCircle2,
-  AlertCircle
+  ArrowLeft
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const RecruiterPostJobPage = () => {
   const navigate = useNavigate();
@@ -139,9 +133,9 @@ const RecruiterPostJobPage = () => {
       <Header />
 
       <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        
+
         {/* Back Button */}
-        <button 
+        <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-gray-500 font-black mb-8 hover:text-indigo-600 transition-colors group cursor-pointer"
         >
@@ -158,7 +152,7 @@ const RecruiterPostJobPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-10">
-            
+
             {/* Basic Info Section */}
             <section>
               <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-3">
@@ -167,8 +161,8 @@ const RecruiterPostJobPage = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <FormGroup label="Tiêu đề tin tuyển dụng" error={!formData.title && "Bắt buộc"}>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
@@ -244,31 +238,31 @@ const RecruiterPostJobPage = () => {
               </h3>
               <div className="space-y-8">
                 <FormGroup label="Mô tả công việc">
-                  <textarea 
-                    name="description" 
-                    value={formData.description} 
-                    onChange={handleChange} 
-                    rows={6} 
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows={6}
                     className="form-input h-auto"
                     placeholder="Mô tả các công việc cần làm hàng ngày..."
                   />
                 </FormGroup>
                 <FormGroup label="Yêu cầu ứng viên">
-                  <textarea 
-                    name="requirement" 
-                    value={formData.requirement} 
-                    onChange={handleChange} 
-                    rows={6} 
+                  <textarea
+                    name="requirement"
+                    value={formData.requirement}
+                    onChange={handleChange}
+                    rows={6}
                     className="form-input h-auto"
                     placeholder="Các kỹ năng, bằng cấp cần thiết..."
                   />
                 </FormGroup>
                 <FormGroup label="Quyền lợi & Phúc lợi">
-                  <textarea 
-                    name="benefit" 
-                    value={formData.benefit} 
-                    onChange={handleChange} 
-                    rows={6} 
+                  <textarea
+                    name="benefit"
+                    value={formData.benefit}
+                    onChange={handleChange}
+                    rows={6}
                     className="form-input h-auto"
                     placeholder="Lương thưởng, bảo hiểm, chế độ nghỉ phép..."
                   />
@@ -278,15 +272,15 @@ const RecruiterPostJobPage = () => {
 
             {/* Action Buttons */}
             <div className="pt-10 flex flex-col md:flex-row gap-4 border-t border-slate-50">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={submitting}
                 className="flex-1 h-16 bg-indigo-600 hover:bg-indigo-700 text-white rounded-[20px] font-black text-lg flex items-center justify-center gap-3 shadow-xl shadow-indigo-600/20 transition-all disabled:opacity-50 cursor-pointer"
               >
                 {submitting ? <Loader2 className="animate-spin" size={24} /> : <PlusCircle size={24} />}
                 {submitting ? 'Đang xử lý...' : 'Đăng tin tuyển dụng'}
               </button>
-              <button 
+              <button
                 type="button"
                 onClick={() => navigate(-1)}
                 className="md:w-48 h-16 bg-slate-900 hover:bg-black text-white rounded-[20px] font-black text-lg transition-all cursor-pointer"

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, 
-  PlusCircle, 
+import {
+  X,
+  PlusCircle,
   Loader2,
   CheckCircle2,
-  AlertCircle,
+  Edit,
   Briefcase,
   MapPin,
   Target,
@@ -13,13 +13,14 @@ import {
   FileText,
   Clock
 } from 'lucide-react';
-import { 
-  getCategories, 
-  getLocations, 
-  getLevels, 
-  getExperiences, 
+import {
+  getCategories,
+  getLocations,
+  getLevels,
+  getExperiences,
   getJobTypes,
-  createJobApi
+  createJobApi,
+  updateJobApi
 } from '../../services/jobService';
 
 interface PostJobModalProps {
@@ -28,9 +29,10 @@ interface PostJobModalProps {
   userId: string;
   companyId: string;
   onSuccess?: () => void;
+  jobToEdit?: any;
 }
 
-const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess }: PostJobModalProps) => {
+const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit }: PostJobModalProps) => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -57,6 +59,51 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess }: PostJob
     benefit: '',
     status: 'Active'
   });
+
+  useEffect(() => {
+    if (isOpen && jobToEdit) {
+      // Helper to get value regardless of casing
+      const getVal = (obj: any, key: string) => {
+        return obj[key.toLowerCase()] ?? obj[key.charAt(0).toUpperCase() + key.slice(1)] ?? '';
+      };
+
+      setFormData({
+        title: getVal(jobToEdit, 'title'),
+        categoryId: getVal(jobToEdit, 'categoryId'),
+        locationId: getVal(jobToEdit, 'locationId'),
+        jobTypeId: getVal(jobToEdit, 'jobTypeId'),
+        levelId: getVal(jobToEdit, 'levelId'),
+        experienceId: getVal(jobToEdit, 'experienceId'),
+        minSalary: Number(getVal(jobToEdit, 'minSalary')) || 0,
+        maxSalary: Number(getVal(jobToEdit, 'maxSalary')) || 0,
+        quantity: Number(getVal(jobToEdit, 'quantity')) || 1,
+        deadline: jobToEdit.deadline || jobToEdit.Deadline
+          ? new Date(jobToEdit.deadline || jobToEdit.Deadline).toISOString().split('T')[0]
+          : '',
+        description: getVal(jobToEdit, 'description'),
+        requirement: getVal(jobToEdit, 'requirement'),
+        benefit: getVal(jobToEdit, 'benefit'),
+        status: getVal(jobToEdit, 'status') || 'Active'
+      });
+    } else if (isOpen && !jobToEdit) {
+      setFormData({
+        title: '',
+        categoryId: '',
+        locationId: '',
+        jobTypeId: '',
+        levelId: '',
+        experienceId: '',
+        minSalary: 0,
+        maxSalary: 0,
+        quantity: 1,
+        deadline: '',
+        description: '',
+        requirement: '',
+        benefit: '',
+        status: 'Active'
+      });
+    }
+  }, [isOpen, jobToEdit]);
 
   useEffect(() => {
     if (isOpen) {
@@ -108,11 +155,15 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess }: PostJob
         ...formData,
         companyId,
         recruiterId: userId,
-        postDate: new Date().toISOString()
+        postDate: jobToEdit ? (jobToEdit.postDate || jobToEdit.PostDate) : new Date().toISOString()
       };
-      const res = await createJobApi(payload);
+
+      const res = jobToEdit
+        ? await updateJobApi(jobToEdit.id, payload)
+        : await createJobApi(payload);
+
       if (res.success) {
-        alert('Đăng tin tuyển dụng thành công!');
+        alert(jobToEdit ? 'Cập nhật tin tuyển dụng thành công!' : 'Đăng tin tuyển dụng thành công!');
         onSuccess?.();
         onClose();
       }
@@ -129,21 +180,23 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess }: PostJob
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" 
+      <div
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       ></div>
 
       {/* Modal Content */}
       <div className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-300">
-        
+
         {/* Header */}
         <div className="px-8 py-6 border-b border-slate-50 flex justify-between items-center bg-white sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <div className="w-2 h-8 bg-linear-to-b from-indigo-500 to-blue-500 rounded-full"></div>
-            <h2 className="text-2xl font-black font-display text-gray-900">Đăng tin tuyển dụng mới</h2>
+            <h2 className="text-2xl font-black font-display text-gray-900">
+              {jobToEdit ? 'Chỉnh sửa tin tuyển dụng' : 'Đăng tin tuyển dụng mới'}
+            </h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="w-12 h-12 rounded-2xl bg-slate-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-all flex items-center justify-center cursor-pointer"
           >
@@ -160,25 +213,25 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess }: PostJob
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-12">
-              
+
               {/* Grid 1: Basic Info */}
               <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <FormGroup label="Tiêu đề tin tuyển dụng" icon={<Briefcase size={16}/>}>
+                <FormGroup label="Tiêu đề tin tuyển dụng" icon={<Briefcase size={16} />}>
                   <input type="text" name="title" value={formData.title} onChange={handleChange} required placeholder="Ví dụ: Senior React Developer" className="form-input" />
                 </FormGroup>
-                <FormGroup label="Danh mục" icon={<Target size={16}/>}>
+                <FormGroup label="Danh mục" icon={<Target size={16} />}>
                   <select name="categoryId" value={formData.categoryId} onChange={handleChange} required className="form-input">
                     <option value="">Chọn danh mục</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </FormGroup>
-                <FormGroup label="Địa điểm" icon={<MapPin size={16}/>}>
+                <FormGroup label="Địa điểm" icon={<MapPin size={16} />}>
                   <select name="locationId" value={formData.locationId} onChange={handleChange} required className="form-input">
                     <option value="">Chọn địa điểm</option>
                     {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                   </select>
                 </FormGroup>
-                <FormGroup label="Hình thức" icon={<Clock size={16}/>}>
+                <FormGroup label="Hình thức" icon={<Clock size={16} />}>
                   <select name="jobTypeId" value={formData.jobTypeId} onChange={handleChange} required className="form-input">
                     <option value="">Chọn hình thức</option>
                     {jobTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -201,21 +254,21 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess }: PostJob
                   </select>
                 </FormGroup>
                 <div className="grid grid-cols-2 gap-4">
-                  <FormGroup label="Lương từ ($)" icon={<DollarSign size={14}/>}>
+                  <FormGroup label="Lương từ ($)" icon={<DollarSign size={14} />}>
                     <input type="number" name="minSalary" value={formData.minSalary} onChange={handleChange} className="form-input px-4" />
                   </FormGroup>
                   <FormGroup label="Đến ($)">
                     <input type="number" name="maxSalary" value={formData.maxSalary} onChange={handleChange} className="form-input px-4" />
                   </FormGroup>
                 </div>
-                <FormGroup label="Hạn nộp hồ sơ" icon={<Calendar size={16}/>}>
+                <FormGroup label="Hạn nộp hồ sơ" icon={<Calendar size={16} />}>
                   <input type="date" name="deadline" value={formData.deadline} onChange={handleChange} required className="form-input" />
                 </FormGroup>
               </section>
 
               {/* Textareas */}
               <section className="space-y-8">
-                <FormGroup label="Mô tả công việc" icon={<FileText size={16}/>}>
+                <FormGroup label="Mô tả công việc" icon={<FileText size={16} />}>
                   <textarea name="description" value={formData.description} onChange={handleChange} rows={4} className="form-input h-auto py-4" placeholder="Mô tả chi tiết công việc..." />
                 </FormGroup>
                 <FormGroup label="Yêu cầu ứng viên">
@@ -231,20 +284,20 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess }: PostJob
 
         {/* Footer Actions */}
         <div className="px-8 py-6 border-t border-slate-50 bg-slate-50/50 flex flex-col md:flex-row gap-4 sticky bottom-0 z-10">
-          <button 
+          <button
             type="button"
             onClick={onClose}
             className="md:w-32 h-14 bg-white border border-slate-200 text-gray-500 rounded-2xl font-black transition-all hover:bg-slate-100 cursor-pointer"
           >
             Hủy bỏ
           </button>
-          <button 
+          <button
             onClick={handleSubmit}
             disabled={submitting || loading}
             className="flex-1 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-indigo-600/20 transition-all disabled:opacity-50 cursor-pointer"
           >
-            {submitting ? <Loader2 className="animate-spin" size={20} /> : <PlusCircle size={20} />}
-            {submitting ? 'Đang đăng tin...' : 'Xác nhận đăng tin'}
+            {submitting ? <Loader2 className="animate-spin" size={20} /> : (jobToEdit ? <Edit size={20} /> : <PlusCircle size={20} />)}
+            {submitting ? (jobToEdit ? 'Đang cập nhật...' : 'Đang đăng tin...') : (jobToEdit ? 'Lưu thay đổi' : 'Xác nhận đăng tin')}
           </button>
         </div>
 

@@ -141,7 +141,10 @@
       ],
       "UpstreamPathTemplate": "/gateway/jobposts/{catchAll}",
       "UpstreamHttpMethod": [
-        "Get"
+        "Get",
+        "Post",
+        "Put",
+        "Delete"
       ]
     },
     {
@@ -155,7 +158,10 @@
       ],
       "UpstreamPathTemplate": "/gateway/jobposts",
       "UpstreamHttpMethod": [
-        "Get"
+        "Get",
+        "Post",
+        "Put",
+        "Delete"
       ]
     },
     // 8. JobApplications (Ứng tuyển)

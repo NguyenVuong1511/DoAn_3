@@ -5,11 +5,11 @@ import { getUserId } from '../services/authService';
 import { getMyCompanyApi } from '../services/companyService';
 import { getJobsByCompanyId } from '../services/jobService';
 import { getApplicationsByJobApi, updateApplicationStatusApi } from '../services/applicationService';
-import { 
-  LayoutDashboard, 
-  Briefcase, 
-  Users, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Briefcase,
+  Users,
+  Settings,
   Loader2,
   Search,
   MoreHorizontal,
@@ -18,8 +18,7 @@ import {
   FileText,
   Filter,
   Download,
-  Mail,
-  ChevronDown
+  Mail
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,7 +48,7 @@ const RecruiterApplicationsPage = () => {
         const jobsRes = await getJobsByCompanyId(companyRes.data.id);
         if (jobsRes.success) {
           setJobs(jobsRes.data);
-          
+
           const allApps: any[] = [];
           const appPromises = jobsRes.data.map(async (job) => {
             const appsRes = await getApplicationsByJobApi(job.id);
@@ -64,8 +63,8 @@ const RecruiterApplicationsPage = () => {
 
           const results = await Promise.all(appPromises);
           results.forEach(apps => allApps.push(...apps));
-          
-          setAllApplications(allApps.sort((a, b) => 
+
+          setAllApplications(allApps.sort((a, b) =>
             new Date(b.applyDate || 0).getTime() - new Date(a.applyDate || 0).getTime()
           ));
         }
@@ -81,7 +80,7 @@ const RecruiterApplicationsPage = () => {
     try {
       const res = await updateApplicationStatusApi(appId, status);
       if (res.success) {
-        setAllApplications(allApplications.map(a => 
+        setAllApplications(allApplications.map(a =>
           a.id === appId ? { ...a, status } : a
         ));
       }
@@ -116,25 +115,25 @@ const RecruiterApplicationsPage = () => {
 
       <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          
+
           {/* Sidebar */}
           <aside className="lg:col-span-3">
-             <div className="bg-white rounded-[32px] p-6 shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-gray-100 sticky top-10">
+            <div className="bg-white rounded-[32px] p-6 shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-gray-100 sticky top-10">
               <div className="flex flex-col gap-2">
-                <SidebarItem 
-                  icon={<LayoutDashboard size={20} />} 
-                  label="Tổng quan" 
+                <SidebarItem
+                  icon={<LayoutDashboard size={20} />}
+                  label="Tổng quan"
                   onClick={() => navigate('/recruiter/dashboard')}
                 />
-                <SidebarItem 
-                  icon={<Briefcase size={20} />} 
-                  label="Tin tuyển dụng" 
+                <SidebarItem
+                  icon={<Briefcase size={20} />}
+                  label="Tin tuyển dụng"
                   onClick={() => navigate('/recruiter/manage-jobs')}
                   badge={jobs.length}
                 />
-                <SidebarItem 
-                  icon={<Users size={20} />} 
-                  label="Ứng viên" 
+                <SidebarItem
+                  icon={<Users size={20} />}
+                  label="Ứng viên"
                   isActive={true}
                   badge={allApplications.length}
                 />
@@ -147,7 +146,7 @@ const RecruiterApplicationsPage = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-9 flex flex-col gap-8">
-            
+
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div>
                 <h1 className="text-3xl font-black font-display text-gray-900 mb-2">Quản lý ứng viên</h1>
@@ -159,9 +158,9 @@ const RecruiterApplicationsPage = () => {
             <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col xl:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Tìm kiếm vị trí ứng tuyển..." 
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm vị trí ứng tuyển..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-12 pr-6 py-3 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:border-indigo-600 outline-none transition-all font-bold text-gray-700"
@@ -170,7 +169,7 @@ const RecruiterApplicationsPage = () => {
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex items-center gap-3">
                   <Briefcase className="text-gray-400" size={18} />
-                  <select 
+                  <select
                     value={jobFilter}
                     onChange={(e) => setJobFilter(e.target.value)}
                     className="bg-slate-50 border border-transparent rounded-xl px-4 py-3 outline-none font-black text-xs text-gray-700 focus:bg-white focus:border-indigo-600 cursor-pointer min-w-[180px]"
@@ -181,7 +180,7 @@ const RecruiterApplicationsPage = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <Filter className="text-gray-400" size={18} />
-                  <select 
+                  <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="bg-slate-50 border border-transparent rounded-xl px-4 py-3 outline-none font-black text-xs text-gray-700 focus:bg-white focus:border-indigo-600 cursor-pointer min-w-[150px]"
@@ -213,8 +212,8 @@ const RecruiterApplicationsPage = () => {
                       <tr key={app.id} className="group hover:bg-slate-50/50 transition-colors">
                         <td className="py-6 px-4">
                           <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-indigo-50 border-2 border-white shadow-sm overflow-hidden flex-shrink-0 flex items-center justify-center text-indigo-500">
-                               <Users size={24} />
+                            <div className="w-14 h-14 rounded-2xl bg-indigo-50 border-2 border-white shadow-sm overflow-hidden shrink-0 flex items-center justify-center text-indigo-500">
+                              <Users size={24} />
                             </div>
                             <div>
                               <p className="font-black text-gray-900 text-sm">Ứng viên #{app.id?.substring(0, 6)}</p>
@@ -231,28 +230,28 @@ const RecruiterApplicationsPage = () => {
                           <p className="text-sm font-bold text-gray-500">{new Date(app.applyDate).toLocaleDateString('vi-VN')}</p>
                         </td>
                         <td className="py-6 px-4">
-                           <StatusBadge status={app.status || 'Pending'} />
+                          <StatusBadge status={app.status || 'Pending'} />
                         </td>
                         <td className="py-6 px-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                             {(!app.status || app.status === 'Pending') && (
-                               <>
-                                <button 
+                            {(!app.status || app.status === 'Pending') && (
+                              <>
+                                <button
                                   onClick={() => handleUpdateStatus(app.id, 'Approved')}
-                                  className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center" 
+                                  className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center"
                                   title="Chấp nhận"
                                 >
                                   <CheckCircle2 size={18} />
                                 </button>
-                                <button 
+                                <button
                                   onClick={() => handleUpdateStatus(app.id, 'Rejected')}
-                                  className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center" 
+                                  className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center"
                                   title="Từ chối"
                                 >
                                   <XCircle size={18} />
                                 </button>
-                               </>
-                             )}
+                              </>
+                            )}
                             <button className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center justify-center">
                               <Download size={18} />
                             </button>
@@ -285,22 +284,20 @@ const RecruiterApplicationsPage = () => {
 };
 
 const SidebarItem = ({ icon, label, isActive, onClick, badge }: any) => (
-  <button 
+  <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group cursor-pointer ${
-      isActive 
-        ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/20' 
+    className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group cursor-pointer ${isActive
+        ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/20'
         : 'text-gray-500 hover:bg-slate-50 hover:text-indigo-600'
-    }`}
+      }`}
   >
     <div className="flex items-center gap-4">
       <span className={`${isActive ? 'text-white' : 'text-gray-400 group-hover:text-indigo-600'} transition-colors`}>{icon}</span>
       <span className="font-black text-[15px]">{label}</span>
     </div>
     {badge !== undefined && badge > 0 && (
-      <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg ${
-        isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-gray-500 group-hover:bg-indigo-50 group-hover:text-indigo-600'
-      } transition-colors`}>
+      <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg ${isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-gray-500 group-hover:bg-indigo-50 group-hover:text-indigo-600'
+        } transition-colors`}>
         {badge}
       </span>
     )}
@@ -313,7 +310,7 @@ const StatusBadge = ({ status }: { status: string }) => {
     'Approved': 'bg-emerald-50 text-emerald-600 border-emerald-100',
     'Rejected': 'bg-rose-50 text-rose-600 border-rose-100',
   };
-  
+
   const labels: any = {
     'Pending': 'Chờ duyệt',
     'Approved': 'Đã duyệt',

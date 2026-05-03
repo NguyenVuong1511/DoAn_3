@@ -3,14 +3,13 @@ import {
   Users,
   Clock,
   CheckCircle2,
-  TrendingUp,
   ChevronRight,
   BarChart3,
   ArrowUpRight,
   AlertCircle,
   MoreHorizontal
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 
 interface OverviewSectionProps {
   jobs: any[];
@@ -92,7 +91,7 @@ const OverviewSection = ({ jobs, allApplications, stats, onSwitchTab }: Overview
                 <tr key={app.id || idx} className="group hover:bg-slate-50/50 transition-colors">
                   <td className="py-6 px-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-100 border-2 border-white shadow-sm overflow-hidden flex-shrink-0">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-100 border-2 border-white shadow-sm overflow-hidden shrink-0">
                         <img
                           src={app.candidateAvatar
                             ? (app.candidateAvatar.startsWith('http') ? app.candidateAvatar : `/images/avatar/${app.candidateAvatar}`)

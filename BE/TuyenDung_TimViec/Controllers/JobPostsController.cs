@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TuyenDung_TimViec.Repositories;
+using TuyenDung_TimViec.Models;
 
 namespace TuyenDung_TimViec.Controllers
 {
@@ -101,6 +102,67 @@ namespace TuyenDung_TimViec.Controllers
             {
                 var jobs = await _jobPostRepository.GetJobPostsByCompanyIdAsync(companyId);
                 return Ok(RepositoryResult<object>.Ok(jobs, "Lấy danh sách việc làm theo công ty thành công!"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] JobPost jobPost)
+        {
+            try
+            {
+                bool result = await _jobPostRepository.CreateJobPostAsync(jobPost);
+                if (result) return Ok(RepositoryResult<object>.Ok(null, "Đăng tin tuyển dụng thành công!"));
+                return BadRequest(RepositoryResult<object>.Fail("Không thể đăng tin tuyển dụng."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] JobPost jobPost)
+        {
+            try
+            {
+                jobPost.Id = id;
+                bool result = await _jobPostRepository.UpdateJobPostAsync(jobPost);
+                if (result) return Ok(RepositoryResult<object>.Ok(null, "Cập nhật tin tuyển dụng thành công!"));
+                return BadRequest(RepositoryResult<object>.Fail("Không thể cập nhật tin tuyển dụng."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            try
+            {
+                bool result = await _jobPostRepository.DeleteJobPostAsync(id);
+                if (result) return Ok(RepositoryResult<object>.Ok(null, "Xóa tin tuyển dụng thành công!"));
+                return BadRequest(RepositoryResult<object>.Fail("Không thể xóa tin tuyển dụng."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}/toggle-status")]
+        public async Task<IActionResult> ToggleStatus(Guid id)
+        {
+            try
+            {
+                bool result = await _jobPostRepository.ToggleJobPostStatusAsync(id);
+                if (result) return Ok(RepositoryResult<object>.Ok(null, "Cập nhật trạng thái thành công!"));
+                return BadRequest(RepositoryResult<object>.Fail("Không thể cập nhật trạng thái."));
             }
             catch (Exception ex)
             {

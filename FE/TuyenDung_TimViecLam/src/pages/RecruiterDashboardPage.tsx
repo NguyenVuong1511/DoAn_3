@@ -16,7 +16,6 @@ import {
   Search,
   Bell
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import PostJobModal from '../components/recruiter/PostJobModal';
 
 // Sub-sections
@@ -26,7 +25,6 @@ import ApplicationsSection from '../components/recruiter/ApplicationsSection';
 
 const RecruiterDashboardPage = () => {
   const userId = getUserId();
-  const navigate = useNavigate();
   const [company, setCompany] = useState<any>(null);
   const [jobs, setJobs] = useState<any[]>([]);
   const [allApplications, setAllApplications] = useState<any[]>([]);
@@ -140,7 +138,16 @@ const RecruiterDashboardPage = () => {
           {/* Dynamic Content Section */}
           <div className="lg:col-span-9">
             {activeTab === 'overview' && <OverviewSection jobs={jobs} allApplications={allApplications} stats={stats} onSwitchTab={setActiveTab} />}
-            {activeTab === 'jobs' && <ManageJobsSection jobs={jobs} refreshData={fetchDashboardData} onOpenPostJob={() => setIsPostJobModalOpen(true)} />}
+            {activeTab === 'jobs' && (
+              <ManageJobsSection 
+                jobs={jobs} 
+                allApplications={allApplications}
+                refreshData={fetchDashboardData} 
+                onOpenPostJob={() => setIsPostJobModalOpen(true)}
+                userId={userId!}
+                companyId={company.id}
+              />
+            )}
             {activeTab === 'candidates' && <ApplicationsSection jobs={jobs} allApplications={allApplications} refreshData={fetchDashboardData} />}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, User, LogOut, Menu, X, History, Heart, LayoutDashboard, Settings, Calendar, Briefcase, Users } from 'lucide-react';
+import { ChevronDown, User, LogOut, Menu, X, History, Heart, LayoutDashboard, Settings, Calendar, Users } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { logout, getToken, getUserRole, getUserId } from '../services/authService';
 import { getCVByUserId } from '../services/cvService';
@@ -73,7 +73,7 @@ const Header = () => {
     const handleAvatarUpdate = () => fetchAvatar();
     window.addEventListener('avatarUpdated', handleAvatarUpdate);
     window.addEventListener('companyUpdated', handleAvatarUpdate);
-    
+
     return () => {
       window.removeEventListener('avatarUpdated', handleAvatarUpdate);
       window.removeEventListener('companyUpdated', handleAvatarUpdate);
@@ -158,7 +158,7 @@ const Header = () => {
                         {role === 'CANDIDATE' ? 'Hồ sơ cá nhân' : 'Hồ sơ công ty'}
                       </Link>
                       <div className="h-px bg-gray-100 my-1"></div>
-                      
+
                       {/* Menu cho Ứng viên */}
                       {role === 'CANDIDATE' && (
                         <>
@@ -221,7 +221,7 @@ const Header = () => {
                           <div className="h-px bg-gray-100 my-1"></div>
                         </>
                       )}
-                      
+
                       <Link
                         to="/settings"
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
