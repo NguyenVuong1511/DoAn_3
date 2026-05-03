@@ -3,7 +3,6 @@ import {
   X,
   PlusCircle,
   Loader2,
-  CheckCircle2,
   Edit,
   Briefcase,
   MapPin,
@@ -62,28 +61,31 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
 
   useEffect(() => {
     if (isOpen && jobToEdit) {
-      // Helper to get value regardless of casing
-      const getVal = (obj: any, key: string) => {
-        return obj[key.toLowerCase()] ?? obj[key.charAt(0).toUpperCase() + key.slice(1)] ?? '';
+      // Flexible key finder (case-insensitive)
+      const findVal = (obj: any, targetKey: string) => {
+        if (!obj) return null;
+        const keys = Object.keys(obj);
+        const foundKey = keys.find(k => k.toLowerCase() === targetKey.toLowerCase());
+        return foundKey ? obj[foundKey] : null;
       };
 
       setFormData({
-        title: getVal(jobToEdit, 'title'),
-        categoryId: getVal(jobToEdit, 'categoryId'),
-        locationId: getVal(jobToEdit, 'locationId'),
-        jobTypeId: getVal(jobToEdit, 'jobTypeId'),
-        levelId: getVal(jobToEdit, 'levelId'),
-        experienceId: getVal(jobToEdit, 'experienceId'),
-        minSalary: Number(getVal(jobToEdit, 'minSalary')) || 0,
-        maxSalary: Number(getVal(jobToEdit, 'maxSalary')) || 0,
-        quantity: Number(getVal(jobToEdit, 'quantity')) || 1,
-        deadline: jobToEdit.deadline || jobToEdit.Deadline
-          ? new Date(jobToEdit.deadline || jobToEdit.Deadline).toISOString().split('T')[0]
+        title: findVal(jobToEdit, 'title') || '',
+        categoryId: findVal(jobToEdit, 'categoryId') || '',
+        locationId: findVal(jobToEdit, 'locationId') || '',
+        jobTypeId: findVal(jobToEdit, 'jobTypeId') || '',
+        levelId: findVal(jobToEdit, 'levelId') || '',
+        experienceId: findVal(jobToEdit, 'experienceId') || '',
+        minSalary: Number(findVal(jobToEdit, 'minSalary')) || 0,
+        maxSalary: Number(findVal(jobToEdit, 'maxSalary')) || 0,
+        quantity: Number(findVal(jobToEdit, 'quantity')) || 1,
+        deadline: (findVal(jobToEdit, 'deadline')) 
+          ? new Date(findVal(jobToEdit, 'deadline')).toISOString().split('T')[0] 
           : '',
-        description: getVal(jobToEdit, 'description'),
-        requirement: getVal(jobToEdit, 'requirement'),
-        benefit: getVal(jobToEdit, 'benefit'),
-        status: getVal(jobToEdit, 'status') || 'Active'
+        description: findVal(jobToEdit, 'description') || '',
+        requirement: findVal(jobToEdit, 'requirement') || '',
+        benefit: findVal(jobToEdit, 'benefit') || '',
+        status: findVal(jobToEdit, 'status') || 'Active'
       });
     } else if (isOpen && !jobToEdit) {
       setFormData({

@@ -25,7 +25,6 @@ import { useNavigate } from 'react-router-dom';
 const RecruiterApplicationsPage = () => {
   const navigate = useNavigate();
   const userId = getUserId();
-  const [company, setCompany] = useState<any>(null);
   const [jobs, setJobs] = useState<any[]>([]);
   const [allApplications, setAllApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +43,6 @@ const RecruiterApplicationsPage = () => {
       setLoading(true);
       const companyRes = await getMyCompanyApi(userId!);
       if (companyRes.success) {
-        setCompany(companyRes.data);
         const jobsRes = await getJobsByCompanyId(companyRes.data.id);
         if (jobsRes.success) {
           setJobs(jobsRes.data);

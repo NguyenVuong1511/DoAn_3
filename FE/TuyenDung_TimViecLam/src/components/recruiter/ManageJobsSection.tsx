@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import { 
-  Search, 
-  Filter, 
-  ToggleRight, 
-  ToggleLeft, 
-  Edit, 
+import {
+  Search,
+  Filter,
+  ToggleRight,
+  ToggleLeft,
+  Edit,
   Trash2,
   PlusCircle,
-  Calendar,
-  Users,
   Eye
 } from 'lucide-react';
 import { deleteJobApi, toggleJobStatusApi } from '../../services/jobService';
@@ -60,14 +58,14 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      
+
       {/* Header & Action */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h1 className="text-3xl font-black font-display text-gray-900 mb-2">Quản lý tin đăng</h1>
           <p className="text-gray-500 font-bold">Bạn đang có {jobs.length} tin tuyển dụng trong hệ thống</p>
         </div>
-        <button 
+        <button
           onClick={onOpenPostJob}
           className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black flex items-center gap-2 shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 transition-all hover:-translate-y-1 cursor-pointer"
         >
@@ -80,9 +78,9 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
       <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="Tìm kiếm tiêu đề tin đăng..." 
+          <input
+            type="text"
+            placeholder="Tìm kiếm tiêu đề tin đăng..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-6 py-3 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:border-indigo-600 outline-none transition-all font-bold text-gray-700"
@@ -90,7 +88,7 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <Filter className="text-gray-400" size={18} />
-          <select 
+          <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-slate-50 border border-transparent rounded-xl px-6 py-3 outline-none font-black text-gray-700 focus:bg-white focus:border-indigo-600 cursor-pointer"
@@ -157,29 +155,28 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
                     </td>
                     <td className="py-6 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button 
+                        <button
                           onClick={() => window.open(`/jobs/${job.id}`, '_blank')}
                           title="Xem trên website"
                           className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-indigo-100"
                         >
                           <Eye size={18} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleToggleStatus(job.id)}
                           title={job.status === 'Active' ? 'Ẩn tin' : 'Hiện tin'}
-                          className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
-                            job.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
-                          }`}
+                          className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${job.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
+                            }`}
                         >
                           {job.status === 'Active' ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
                         </button>
-                        <button 
+                        <button
                           onClick={() => setEditingJob(job)}
                           className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-amber-100"
                         >
                           <Edit size={18} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeleteJob(job.id)}
                           className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-rose-100"
                         >
@@ -195,7 +192,7 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
         </div>
       </div>
 
-      <PostJobModal 
+      <PostJobModal
         isOpen={!!editingJob}
         onClose={() => setEditingJob(null)}
         userId={userId}
