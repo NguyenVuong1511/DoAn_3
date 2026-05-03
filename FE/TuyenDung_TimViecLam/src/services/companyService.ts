@@ -31,3 +31,29 @@ export const getCompanyByIdApi = async (id: string) => {
   const response = await axiosInstance.get(`/companies/${id}`);
   return response.data;
 };
+
+export const uploadCompanyLogoApi = async (companyId: string, file: File) => {
+  const formData = new FormData();
+  formData.append('companyId', companyId);
+  formData.append('file', file);
+
+  const response = await axiosInstance.post('/api/Upload/company-logo', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const uploadCompanyCoverApi = async (companyId: string, file: File) => {
+  const formData = new FormData();
+  formData.append('companyId', companyId);
+  formData.append('file', file);
+
+  const response = await axiosInstance.post('/api/Upload/company-cover', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};

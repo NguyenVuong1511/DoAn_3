@@ -1,14 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
 import { getUserId } from '../services/authService';
-import { getMyCompanyApi, updateCompanyApi, type Company } from '../services/companyService';
+import {
+  getMyCompanyApi,
+  updateCompanyApi,
+  uploadCompanyLogoApi,
+  uploadCompanyCoverApi,
+  type Company
+} from '../services/companyService';
 import { getJobsByCompanyId } from '../services/jobService';
 import {
   MapPin, Users, Globe, Mail, Phone,
-  ExternalLink, AlertCircle, Briefcase, Heart, CheckCircle2,
-  ChevronRight, Edit3, Save, X, Loader2, Camera, Award,
-  Info, Sparkles
+  ExternalLink, AlertCircle, Briefcase, CheckCircle2,
+  ChevronRight, Edit3, Save, X, Loader2, Camera, Award, Sparkles
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -20,6 +25,20 @@ const RecruiterProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Company | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Logo upload state
+  const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  // Cover upload state
+  const [isCoverModalOpen, setIsCoverModalOpen] = useState(false);
+  const [selectedCoverFile, setSelectedCoverFile] = useState<File | null>(null);
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (userId) {
@@ -80,6 +99,91 @@ const RecruiterProfilePage = () => {
     setEditForm(prev => prev ? { ...prev, [name]: value } : null);
   };
 
+  // Image Upload Handlers
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setSelectedLogoFile(file);
+      setLogoPreviewUrl(URL.createObjectURL(file));
+      setIsLogoModalOpen(true);
+    }
+  };
+
+  const handleCoverChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setSelectedCoverFile(file);
+      setCoverPreviewUrl(URL.createObjectURL(file));
+      setIsCoverModalOpen(true);
+    }
+  };
+
+  const closeLogoModal = () => {
+    setIsLogoModalOpen(false);
+    setSelectedLogoFile(null);
+    if (logoPreviewUrl) URL.revokeObjectURL(logoPreviewUrl);
+    setLogoPreviewUrl(null);
+    if (logoInputRef.current) logoInputRef.current.value = '';
+  };
+
+  const closeCoverModal = () => {
+    setIsCoverModalOpen(false);
+    setSelectedCoverFile(null);
+    if (coverPreviewUrl) URL.revokeObjectURL(coverPreviewUrl);
+    setCoverPreviewUrl(null);
+    if (coverInputRef.current) coverInputRef.current.value = '';
+  };
+
+  const handleUploadLogo = async () => {
+    if (!selectedLogoFile || !company) {
+      console.log("Missing file or company", { selectedLogoFile, company });
+      return;
+    }
+    setIsUploadingLogo(true);
+    try {
+      console.log("Uploading logo for company:", company.id);
+      const res = await uploadCompanyLogoApi(company.id, selectedLogoFile);
+      console.log("Upload logo response:", res);
+      if (res.success) {
+        setCompany(prev => prev ? { ...prev, logo: res.data } : null);
+        setEditForm(prev => prev ? { ...prev, logo: res.data } : null);
+        closeLogoModal();
+      } else {
+        alert(res.message);
+      }
+    } catch (error: any) {
+      console.error("Upload logo error:", error);
+      alert("Lỗi khi tải logo: " + error.message);
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  const handleUploadCover = async () => {
+    if (!selectedCoverFile || !company) {
+      console.log("Missing cover file or company", { selectedCoverFile, company });
+      return;
+    }
+    setIsUploadingCover(true);
+    try {
+      console.log("Uploading cover for company:", company.id);
+      const res = await uploadCompanyCoverApi(company.id, selectedCoverFile);
+      console.log("Upload cover response:", res);
+      if (res.success) {
+        setCompany(prev => prev ? { ...prev, cover: res.data } : null);
+        setEditForm(prev => prev ? { ...prev, cover: res.data } : null);
+        closeCoverModal();
+      } else {
+        alert(res.message);
+      }
+    } catch (error: any) {
+      console.error("Upload cover error:", error);
+      alert("Lỗi khi tải ảnh bìa: " + error.message);
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50">
@@ -115,19 +219,40 @@ const RecruiterProfilePage = () => {
       <Header />
 
       <main className="flex-1 w-full flex flex-col pb-20">
+        {/* Hidden File Inputs */}
+        <input
+          type="file"
+          ref={logoInputRef}
+          onChange={handleLogoChange}
+          accept="image/*"
+          className="hidden"
+        />
+        <input
+          type="file"
+          ref={coverInputRef}
+          onChange={handleCoverChange}
+          accept="image/*"
+          className="hidden"
+        />
 
         {/* Cover Photo */}
         <section className="relative w-full h-[350px] md:h-[450px]">
           <div
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${company.cover || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2070'})` }}
+            style={{ backgroundImage: `url(${company.cover ? (company.cover.startsWith('http') ? company.cover : `/images/${company.cover}`) : 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=2070'})` }}
           >
             <div className="absolute inset-0 bg-slate-900/40" />
             <div className="absolute inset-0 bg-linear-to-t from-slate-900/90 to-transparent" />
           </div>
 
           {isEditing && (
-            <button className="absolute bottom-8 right-8 z-30 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 border border-white/30 transition-all cursor-pointer">
+            <button
+              onClick={() => {
+                console.log("Cover input clicked");
+                coverInputRef.current?.click();
+              }}
+              className="absolute bottom-8 right-8 z-30 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 border border-white/30 transition-all cursor-pointer"
+            >
               <Camera size={20} />
               Thay đổi ảnh bìa
             </button>
@@ -147,12 +272,18 @@ const RecruiterProfilePage = () => {
                 {/* Logo */}
                 <div className="w-40 h-40 rounded-[32px] p-4 bg-white border border-gray-100 shadow-xl -mt-24 mb-6 shrink-0 relative flex items-center justify-center overflow-hidden group">
                   <img
-                    src={company.logo ? `/images/${company.logo}` : 'https://placehold.co/200x200?text=Logo'}
+                    src={company.logo ? (company.logo.startsWith('http') ? company.logo : `/images/${company.logo}`) : 'https://placehold.co/200x200?text=Logo'}
                     alt={company.name}
                     className="w-full h-full object-contain"
                   />
                   {isEditing && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <div
+                      onClick={() => {
+                        console.log("Logo input clicked");
+                        logoInputRef.current?.click();
+                      }}
+                      className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    >
                       <Camera size={32} className="text-white" />
                     </div>
                   )}
@@ -191,7 +322,7 @@ const RecruiterProfilePage = () => {
                   </>
                 )}
 
-                <div className="w-full flex gap-3 mb-8">
+                <div className="w-full flex gap-3 mb-8 mt-5">
                   {isEditing ? (
                     <>
                       <button
@@ -415,6 +546,82 @@ const RecruiterProfilePage = () => {
       </main>
 
       <Footer />
+
+      {/* Upload Logo Modal */}
+      {isLogoModalOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900 font-display">Cập nhật logo công ty</h3>
+              <button onClick={closeLogoModal} disabled={isUploadingLogo} className="text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 flex flex-col items-center">
+              <p className="text-sm text-gray-500 mb-6 text-center">Logo sẽ hiển thị trên các tin tuyển dụng và hồ sơ công ty.</p>
+              <div className="w-40 h-40 rounded-[32px] border-4 border-indigo-50 shadow-lg overflow-hidden mb-6 bg-gray-50 flex items-center justify-center p-4">
+                {logoPreviewUrl ? (
+                  <img src={logoPreviewUrl} alt="Logo Preview" className="w-full h-full object-contain" />
+                ) : (
+                  <Camera size={40} className="text-gray-300" />
+                )}
+              </div>
+              <button
+                onClick={() => logoInputRef.current?.click()}
+                className="mb-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors cursor-pointer"
+              >
+                Chọn ảnh khác
+              </button>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end">
+              <button onClick={closeLogoModal} disabled={isUploadingLogo} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">Hủy bỏ</button>
+              <button onClick={handleUploadLogo} disabled={isUploadingLogo} className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all cursor-pointer flex items-center gap-2">
+                {isUploadingLogo ? <><Loader2 size={16} className="animate-spin" /> Đang lưu...</> : 'Lưu thay đổi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Cover Modal */}
+      {isCoverModalOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900 font-display">Cập nhật ảnh bìa</h3>
+              <button onClick={closeCoverModal} disabled={isUploadingCover} className="text-gray-400 hover:text-gray-600 transition-colors p-1 cursor-pointer">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-500 mb-6">Ảnh bìa giúp hồ sơ công ty chuyên nghiệp hơn. Khuyên dùng ảnh phong cảnh hoặc văn phòng.</p>
+              <div className="w-full aspect-video rounded-2xl border-4 border-indigo-50 shadow-lg overflow-hidden bg-gray-50">
+                {coverPreviewUrl ? (
+                  <img src={coverPreviewUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Camera size={48} className="text-gray-300" />
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={() => coverInputRef.current?.click()}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-bold transition-colors cursor-pointer"
+                >
+                  Chọn ảnh khác
+                </button>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex gap-3 justify-end">
+              <button onClick={closeCoverModal} disabled={isUploadingCover} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">Hủy bỏ</button>
+              <button onClick={handleUploadCover} disabled={isUploadingCover} className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all cursor-pointer flex items-center gap-2">
+                {isUploadingCover ? <><Loader2 size={16} className="animate-spin" /> Đang lưu...</> : 'Lưu thay đổi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

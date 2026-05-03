@@ -257,5 +257,121 @@ namespace TuyenDung_TimViec.Controllers
                 return StatusCode(500, new { success = false, message = "Lỗi khi xóa file: " + ex.Message });
             }
         }
+
+        [HttpPost("company-logo")]
+        public async Task<IActionResult> UploadCompanyLogo([FromForm] IFormFile file, [FromForm] Guid companyId)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { success = false, message = "Không có file được chọn." });
+
+            try
+            {
+                var beDir = _env.ContentRootPath;
+                var feImgDir = Path.GetFullPath(Path.Combine(beDir, "..", "..", "FE", "TuyenDung_TimViecLam", "public", "images"));
+
+                if (!Directory.Exists(feImgDir)) Directory.CreateDirectory(feImgDir);
+
+                var fileExtension = Path.GetExtension(file.FileName);
+                var fileName = $"logo_{companyId}_{DateTime.Now.Ticks}{fileExtension}";
+                var filePath = Path.Combine(feImgDir, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                using (SqlConnection conn = new SqlConnection(_connectionString))
+                {
+                    await conn.OpenAsync();
+
+                    // Delete old logo
+                    string oldLogo = null;
+                    using (SqlCommand selectCmd = new SqlCommand("SELECT Logo FROM Companies WHERE Id = @CompanyId", conn))
+                    {
+                        selectCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                        var result = await selectCmd.ExecuteScalarAsync();
+                        if (result != null && result != DBNull.Value) oldLogo = result.ToString();
+                    }
+
+                    if (!string.IsNullOrEmpty(oldLogo))
+                    {
+                        var oldFilePath = Path.Combine(feImgDir, oldLogo);
+                        if (System.IO.File.Exists(oldFilePath)) try { System.IO.File.Delete(oldFilePath); } catch { }
+                    }
+
+                    // Update DB
+                    using (SqlCommand updateCmd = new SqlCommand("UPDATE Companies SET Logo = @Logo WHERE Id = @CompanyId", conn))
+                    {
+                        updateCmd.Parameters.AddWithValue("@Logo", fileName);
+                        updateCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                        await updateCmd.ExecuteNonQueryAsync();
+                    }
+                }
+
+                return Ok(new { success = true, message = "Tải logo thành công.", data = fileName });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi khi lưu logo: " + ex.Message });
+            }
+        }
+
+        [HttpPost("company-cover")]
+        public async Task<IActionResult> UploadCompanyCover([FromForm] IFormFile file, [FromForm] Guid companyId)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { success = false, message = "Không có file được chọn." });
+
+            try
+            {
+                var beDir = _env.ContentRootPath;
+                var feImgDir = Path.GetFullPath(Path.Combine(beDir, "..", "..", "FE", "TuyenDung_TimViecLam", "public", "images"));
+
+                if (!Directory.Exists(feImgDir)) Directory.CreateDirectory(feImgDir);
+
+                var fileExtension = Path.GetExtension(file.FileName);
+                var fileName = $"cover_{companyId}_{DateTime.Now.Ticks}{fileExtension}";
+                var filePath = Path.Combine(feImgDir, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                using (SqlConnection conn = new SqlConnection(_connectionString))
+                {
+                    await conn.OpenAsync();
+
+                    // Delete old cover
+                    string oldCover = null;
+                    using (SqlCommand selectCmd = new SqlCommand("SELECT CoverImage FROM Companies WHERE Id = @CompanyId", conn))
+                    {
+                        selectCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                        var result = await selectCmd.ExecuteScalarAsync();
+                        if (result != null && result != DBNull.Value) oldCover = result.ToString();
+                    }
+
+                    if (!string.IsNullOrEmpty(oldCover))
+                    {
+                        var oldFilePath = Path.Combine(feImgDir, oldCover);
+                        if (System.IO.File.Exists(oldFilePath)) try { System.IO.File.Delete(oldFilePath); } catch { }
+                    }
+
+                    // Update DB
+                    using (SqlCommand updateCmd = new SqlCommand("UPDATE Companies SET CoverImage = @CoverImage WHERE Id = @CompanyId", conn))
+                    {
+                        updateCmd.Parameters.AddWithValue("@CoverImage", fileName);
+                        updateCmd.Parameters.AddWithValue("@CompanyId", companyId);
+                        await updateCmd.ExecuteNonQueryAsync();
+                    }
+                }
+
+                return Ok(new { success = true, message = "Tải ảnh bìa thành công.", data = fileName });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi khi lưu ảnh bìa: " + ex.Message });
+            }
+        }
     }
 }
