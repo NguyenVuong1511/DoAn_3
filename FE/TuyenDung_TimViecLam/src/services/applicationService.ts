@@ -40,3 +40,8 @@ export const updateApplicationStatusApi = async (id: string, status: string, not
   const response = await axiosInstance.put(`/jobapplications/status/${id}`, { status, note });
   return response.data;
 };
+
+export const withdrawApplicationApi = async (id: string) => {
+  const response = await axiosInstance.delete(`/jobapplications/withdraw/${id}`);
+  return response.data;
+};

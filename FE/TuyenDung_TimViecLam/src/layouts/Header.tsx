@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, User, LogOut, Menu, X, History, Heart, LayoutDashboard, Settings } from 'lucide-react';
+import { ChevronDown, User, LogOut, Menu, X, History, Heart, LayoutDashboard, Settings, Calendar } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { logout, getToken, getUserRole, getUserId } from '../services/authService';
 import { getCVByUserId } from '../services/cvService';
@@ -64,7 +64,7 @@ const Header = () => {
 
     const handleAvatarUpdate = () => fetchAvatar();
     window.addEventListener('avatarUpdated', handleAvatarUpdate);
-    
+
     return () => window.removeEventListener('avatarUpdated', handleAvatarUpdate);
   }, [isLoggedIn]);
 
@@ -156,6 +156,15 @@ const Header = () => {
                           >
                             <History size={16} />
                             Lịch sử ứng tuyển
+                          </Link>
+                          <div className="h-px bg-gray-100 my-1"></div>
+                          <Link
+                            to="/interviews"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            onClick={() => setShowDropdown(false)}
+                          >
+                            <Calendar size={16} />
+                            Lịch phỏng vấn
                           </Link>
                           <div className="h-px bg-gray-100 my-1"></div>
                           <Link
@@ -294,6 +303,16 @@ const Header = () => {
                         <History size={18} />
                       </div>
                       Lịch sử ứng tuyển
+                    </Link>
+                    <Link
+                      to="/interviews"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                        <Calendar size={18} />
+                      </div>
+                      Lịch phỏng vấn
                     </Link>
                     <Link
                       to="/saved-jobs"

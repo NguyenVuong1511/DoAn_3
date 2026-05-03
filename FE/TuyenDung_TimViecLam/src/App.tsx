@@ -10,6 +10,7 @@ import RegisterPage from './features/auth/RegisterPage'
 import SavedJobsPage from './pages/SavedJobsPage'
 import JobDetailPage from './pages/JobDetailPage'
 import AppliedJobsPage from './pages/AppliedJobsPage'
+import InterviewsPage from './pages/InterviewsPage'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/saved-jobs" element={<SavedJobsPage />} />
         <Route path="/applied-jobs" element={<AppliedJobsPage />} />
+        <Route path="/interviews" element={<InterviewsPage />} />
       </Routes>
     </BrowserRouter>
   )

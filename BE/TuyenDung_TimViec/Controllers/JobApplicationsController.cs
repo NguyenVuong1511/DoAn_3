@@ -95,6 +95,24 @@ namespace TuyenDung_TimViec.Controllers
                 return StatusCode(500, new { success = false, message = "Lỗi khi kiểm tra trạng thái: " + ex.Message });
             }
         }
+
+        [HttpDelete("withdraw/{id}")]
+        public async Task<IActionResult> WithdrawApplication(Guid id)
+        {
+            try
+            {
+                bool result = await _applicationRepo.WithdrawApplicationAsync(id);
+                if (result)
+                {
+                    return Ok(new { success = true, message = "Rút hồ sơ thành công." });
+                }
+                return BadRequest(new { success = false, message = "Không thể rút hồ sơ. Có thể hồ sơ đã được xử lý hoặc không tồn tại." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi khi rút hồ sơ: " + ex.Message });
+            }
+        }
     }
 
     public class UpdateStatusRequest

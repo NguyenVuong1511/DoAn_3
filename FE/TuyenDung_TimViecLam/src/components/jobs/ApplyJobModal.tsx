@@ -142,7 +142,7 @@ const ApplyJobModal: React.FC<ApplyJobModalProps> = ({ isOpen, onClose, jobId, j
               <img
                 src={companyLogo ? `/images/${companyLogo}` : 'https://placehold.co/100x100?text=Job'}
                 alt="Job"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain rounded-xl"
                 onError={(e) => { e.currentTarget.src = 'https://placehold.co/100x100?text=Logo'; }}
               />
             </div>

@@ -159,6 +159,24 @@
         "Delete"
       ]
     },
+    // 9. Interviews (Lịch phỏng vấn)
+    {
+      "DownstreamPathTemplate": "/api/interviews/{catchAll}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/interviews/{catchAll}",
+      "UpstreamHttpMethod": [
+        "Get",
+        "Post",
+        "Put",
+        "Delete"
+      ]
+    },
     // 5.JobService 
     {
       "DownstreamPathTemplate": "/{catchAll}",

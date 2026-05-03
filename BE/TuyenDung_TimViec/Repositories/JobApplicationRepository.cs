@@ -14,6 +14,7 @@ namespace TuyenDung_TimViec.Repositories
         Task<List<JobApplication>> GetApplicationsByJobPostIdAsync(Guid jobPostId);
         Task<bool> UpdateApplicationStatusAsync(Guid applicationId, string status, string? note);
         Task<bool> CheckIfAppliedAsync(Guid userId, Guid jobPostId);
+        Task<bool> WithdrawApplicationAsync(Guid applicationId);
     }
 
     public class JobApplicationRepository : IJobApplicationRepository
@@ -223,6 +224,22 @@ namespace TuyenDung_TimViec.Repositories
                     command.Parameters.AddWithValue("@JobPostId", jobPostId);
                     var count = (int)await command.ExecuteScalarAsync();
                     return count > 0;
+                }
+            }
+        }
+
+        public async Task<bool> WithdrawApplicationAsync(Guid applicationId)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                // Only allow withdrawing if the status is Pending
+                string query = "DELETE FROM Applications WHERE Id = @Id AND Status = 'Pending'";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", applicationId);
+                    int result = await command.ExecuteNonQueryAsync();
+                    return result > 0;
                 }
             }
         }
