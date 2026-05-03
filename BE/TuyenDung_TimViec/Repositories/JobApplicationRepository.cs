@@ -15,6 +15,7 @@ namespace TuyenDung_TimViec.Repositories
         Task<bool> UpdateApplicationStatusAsync(Guid applicationId, string status, string? note);
         Task<bool> CheckIfAppliedAsync(Guid userId, Guid jobPostId);
         Task<bool> WithdrawApplicationAsync(Guid applicationId);
+        Task<List<JobApplication>> GetApplicationsByCompanyIdAsync(Guid companyId);
     }
 
     public class JobApplicationRepository : IJobApplicationRepository
@@ -242,6 +243,51 @@ namespace TuyenDung_TimViec.Repositories
                     return result > 0;
                 }
             }
+        }
+
+        public async Task<List<JobApplication>> GetApplicationsByCompanyIdAsync(Guid companyId)
+        {
+            var applications = new List<JobApplication>();
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                string query = @"
+                    SELECT a.*, jp.Title as JobTitle, cand.FullName as CandidateName, cand.Avatar as CandidateAvatar, cv.Title as CVTitle
+                    FROM Applications a
+                    INNER JOIN JobPosts jp ON a.JobPostId = jp.Id
+                    INNER JOIN Candidates cand ON a.CandidateId = cand.Id
+                    LEFT JOIN CVs cv ON a.CVId = cv.Id
+                    WHERE jp.CompanyId = @CompanyId
+                    ORDER BY a.ApplyDate DESC";
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@CompanyId", companyId);
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            applications.Add(new JobApplication
+                            {
+                                Id = reader.GetGuid(reader.GetOrdinal("Id")),
+                                CandidateId = reader.GetGuid(reader.GetOrdinal("CandidateId")),
+                                JobPostId = reader.GetGuid(reader.GetOrdinal("JobPostId")),
+                                CVId = reader.GetGuid(reader.GetOrdinal("CVId")),
+                                ApplyDate = reader.GetDateTime(reader.GetOrdinal("ApplyDate")),
+                                CoverLetter = reader.IsDBNull(reader.GetOrdinal("CoverLetter")) ? null : reader.GetString(reader.GetOrdinal("CoverLetter")),
+                                Status = reader.GetString(reader.GetOrdinal("Status")),
+                                CVType = reader.IsDBNull(reader.GetOrdinal("CVType")) ? "Online" : reader.GetString(reader.GetOrdinal("CVType")),
+                                EmployerNote = reader.IsDBNull(reader.GetOrdinal("EmployerNote")) ? null : reader.GetString(reader.GetOrdinal("EmployerNote")),
+                                JobTitle = reader.GetString(reader.GetOrdinal("JobTitle")),
+                                CandidateName = reader.GetString(reader.GetOrdinal("CandidateName")),
+                                CandidateAvatar = reader.IsDBNull(reader.GetOrdinal("CandidateAvatar")) ? null : reader.GetString(reader.GetOrdinal("CandidateAvatar")),
+                                CVTitle = reader.IsDBNull(reader.GetOrdinal("CVTitle")) ? "Online CV" : reader.GetString(reader.GetOrdinal("CVTitle"))
+                            });
+                        }
+                    }
+                }
+            }
+            return applications;
         }
     }
 }

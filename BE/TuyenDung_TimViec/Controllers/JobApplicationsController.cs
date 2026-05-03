@@ -65,6 +65,20 @@ namespace TuyenDung_TimViec.Controllers
             }
         }
 
+        [HttpGet("company/{companyId}")]
+        public async Task<IActionResult> GetByCompany(Guid companyId)
+        {
+            try
+            {
+                var applications = await _applicationRepo.GetApplicationsByCompanyIdAsync(companyId);
+                return Ok(new { success = true, data = applications });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = "Lỗi khi lấy danh sách ứng tuyển của công ty: " + ex.Message });
+            }
+        }
+
         [HttpPut("status/{id}")]
         public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateStatusRequest request)
         {

@@ -74,3 +74,23 @@ export async function getJobTypes() {
     const { data } = await axiosInstance.get<ApiResponse<JobType[]>>('/metadata/jobtypes');
     return data;
 }
+
+export async function createJobApi(job: any) {
+    const { data } = await axiosInstance.post<ApiResponse<Job>>('/jobposts', job);
+    return data;
+}
+
+export async function updateJobApi(id: string, job: any) {
+    const { data } = await axiosInstance.put<ApiResponse<Job>>(`/jobposts/${id}`, job);
+    return data;
+}
+
+export async function deleteJobApi(id: string) {
+    const { data } = await axiosInstance.delete<ApiResponse<boolean>>(`/jobposts/${id}`);
+    return data;
+}
+
+export async function toggleJobStatusApi(id: string) {
+    const { data } = await axiosInstance.put<ApiResponse<boolean>>(`/jobposts/${id}/toggle-status`);
+    return data;
+}

@@ -36,6 +36,11 @@ export const getApplicationsByJobApi = async (jobPostId: string) => {
   return response.data;
 };
 
+export const getApplicationsByCompanyApi = async (companyId: string) => {
+  const response = await axiosInstance.get(`/jobapplications/company/${companyId}`);
+  return response.data;
+};
+
 export const updateApplicationStatusApi = async (id: string, status: string, note?: string) => {
   const response = await axiosInstance.put(`/jobapplications/status/${id}`, { status, note });
   return response.data;

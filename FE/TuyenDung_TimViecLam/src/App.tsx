@@ -11,6 +11,7 @@ import SavedJobsPage from './pages/SavedJobsPage'
 import JobDetailPage from './pages/JobDetailPage'
 import AppliedJobsPage from './pages/AppliedJobsPage'
 import InterviewsPage from './pages/InterviewsPage'
+import RecruiterDashboardPage from './pages/RecruiterDashboardPage'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/jobs/:id" element={<JobDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/recruiter-profile" element={<RecruiterProfilePage />} />
+        <Route path="/recruiter/dashboard" element={<RecruiterDashboardPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

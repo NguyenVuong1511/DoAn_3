@@ -203,15 +203,7 @@ const Header = () => {
                             Bảng điều khiển
                           </Link>
                           <Link
-                            to="/recruiter/post-job"
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            <Briefcase size={16} />
-                            Đăng tin tuyển dụng
-                          </Link>
-                          <Link
-                            to="/recruiter/manage-jobs"
+                            to="/recruiter/dashboard"
                             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                             onClick={() => setShowDropdown(false)}
                           >
@@ -219,7 +211,7 @@ const Header = () => {
                             Quản lý tin đăng
                           </Link>
                           <Link
-                            to="/recruiter/applications"
+                            to="/recruiter/dashboard"
                             className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                             onClick={() => setShowDropdown(false)}
                           >
@@ -377,17 +369,17 @@ const Header = () => {
                       Bảng điều khiển
                     </Link>
                     <Link
-                      to="/recruiter/post-job"
+                      to="/recruiter/dashboard"
                       className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                        <Briefcase size={18} />
+                        <History size={18} />
                       </div>
-                      Đăng tin mới
+                      Quản lý tin đăng
                     </Link>
                     <Link
-                      to="/recruiter/applications"
+                      to="/recruiter/dashboard"
                       className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                       onClick={() => setMobileMenuOpen(false)}
                     >

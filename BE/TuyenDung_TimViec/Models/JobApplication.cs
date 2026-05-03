@@ -24,5 +24,6 @@ namespace TuyenDung_TimViec.Models
         public string? CompanyLogo { get; set; }
         public string? CVTitle { get; set; }
         public string? CandidateName { get; set; }
+        public string? CandidateAvatar { get; set; }
     }
 }
