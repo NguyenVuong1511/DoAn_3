@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
 import {
   Mail, Phone, MapPin, Calendar, Briefcase, GraduationCap,
-  PenLine, Camera, ExternalLink, Loader2, X, FileText, Trash2, Globe
+  PenLine, Camera, Loader2, X, FileText, Trash2, Globe, FileSearch
 } from 'lucide-react';
+import CVFileViewer from '../components/common/CVFileViewer';
 import { getCVByUserId, uploadAvatar, updateCVDetail, uploadCVFile, deleteCVFile } from '../services/cvService';
 import { getUserId } from '../services/authService';
 import type { CV } from '../types/cv';
@@ -49,6 +51,10 @@ const ProfilePage = () => {
   const [selectedCvFile, setSelectedCvFile] = useState<File | null>(null);
   const [isUploadingCv, setIsUploadingCv] = useState(false);
   const cvFileInputRef = useRef<HTMLInputElement>(null);
+
+  // CV Viewer state
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [viewerFileUrl, setViewerFileUrl] = useState('');
 
   const closeAvatarModal = () => {
     setIsAvatarModalOpen(false);
@@ -188,18 +194,23 @@ const ProfilePage = () => {
     }
   }, [error]);
 
+  const { id, cvId } = useParams();
+  const currentUserId = getUserId();
+  const targetUserId = id || currentUserId;
+  const isOwnProfile = !id || id === currentUserId;
+  const isDedicatedCVView = !!cvId;
+
   // Removed mock user data, now using cvData directly
   useEffect(() => {
     const fetchCV = async () => {
       try {
-        const userId = getUserId();
-        if (!userId) {
+        if (!targetUserId) {
           setError('Vui lòng đăng nhập để xem hồ sơ');
           setLoading(false);
           return;
         }
 
-        const response = await getCVByUserId(userId);
+        const response = await getCVByUserId(targetUserId);
         if (response.success && response.data) {
           setCvData(response.data);
         } else {
@@ -213,7 +224,7 @@ const ProfilePage = () => {
     };
 
     fetchCV();
-  }, []);
+  }, [targetUserId]);
 
   const getSkillLevelStyles = (level: string) => {
     switch (level) {
@@ -271,8 +282,8 @@ const ProfilePage = () => {
   const displayTitle = cvData?.title?.split(' - ')[0] || 'Chưa cập nhật chức danh';
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
-      <Header />
+    <div className={`min-h-screen flex flex-col bg-slate-50 font-sans ${isDedicatedCVView ? 'py-10' : ''}`}>
+      {!isDedicatedCVView && <Header />}
 
       <main className="flex-1 w-full flex flex-col pb-20">
 
@@ -302,215 +313,236 @@ const ProfilePage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
             {/* LEFT COLUMN: User Summary & Actions */}
-            <div className="lg:col-span-4 lg:col-start-1 flex flex-col gap-6">
+            {!isDedicatedCVView && (
+              <div className="lg:col-span-4 lg:col-start-1 flex flex-col gap-6">
 
-              {/* Profile Card */}
-              <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 flex flex-col items-center text-center group relative">
-                <button
-                  onClick={() => {
-                    setDraftBasicInfo({
-                      fullName: cvData?.fullName || '',
-                      title: cvData?.title || '',
-                      phone: cvData?.phone || '',
-                      address: cvData?.address || '',
-                      dateOfBirth: cvData?.dateOfBirth || '',
-                      gender: cvData?.gender || '',
-                      github: cvData?.github || '',
-                      linkedIn: cvData?.linkedIn || '',
-                      website: cvData?.website || ''
-                    });
-                    setIsBasicInfoModalOpen(true);
-                  }}
-                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
-                >
-                  <PenLine size={18} />
-                </button>
+                {/* Profile Card */}
+                <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 flex flex-col items-center text-center group relative">
+                  {isOwnProfile && (
+                    <button
+                      onClick={() => {
+                        setDraftBasicInfo({
+                          fullName: cvData?.fullName || '',
+                          title: cvData?.title || '',
+                          phone: cvData?.phone || '',
+                          address: cvData?.address || '',
+                          dateOfBirth: cvData?.dateOfBirth || '',
+                          gender: cvData?.gender || '',
+                          github: cvData?.github || '',
+                          linkedIn: cvData?.linkedIn || '',
+                          website: cvData?.website || ''
+                        });
+                        setIsBasicInfoModalOpen(true);
+                      }}
+                      className="absolute top-4 right-4 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                    >
+                      <PenLine size={18} />
+                    </button>
+                  )}
 
-                {/* Avatar with floating edit button */}
-                <div className="relative mb-5 group">
-                  <div className="w-32 h-32 rounded-full p-1 bg-white border-2 border-indigo-100 shadow-md">
-                    <img
-                      src={`/images/avatar/${cvData?.avatar}` || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256&h=256'}
-                      alt={displayName}
-                      className="w-full h-full rounded-full object-cover"
+                  {/* Avatar with floating edit button */}
+                  <div className="relative mb-5 group">
+                    <div className="w-32 h-32 rounded-full p-1 bg-white border-2 border-indigo-100 shadow-md">
+                      <img
+                        src={cvData?.avatar ? `/images/avatar/${cvData.avatar}` : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=256&h=256'}
+                        alt={displayName}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
                     />
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                  />
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="absolute bottom-1 right-1 w-9 h-9 bg-linear-to-r from-purple-500 to-blue-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
-                  >
-                    <Camera size={16} />
-                  </button>
-                </div>
-
-                <h2 className="text-2xl font-black font-display text-gray-900 mb-1 leading-tight">{displayName} {cvData?.gender === 'Nam' ? '♂️' : cvData?.gender === 'Nữ' ? '♀️' : cvData?.gender === 'Khác' ? '⚧️' : ''}</h2>
-                <p className="text-[15px] font-medium text-indigo-600 mb-5">{displayTitle}</p>
-
-
-                {/* Divider */}
-                <div className="w-full h-px bg-gray-100 mb-6"></div>
-
-                {/* Contact Info List */}
-                <div className="w-full flex flex-col gap-4 text-left">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                      <Mail size={16} />
-                    </div>
-                    <div className="flex flex-col overflow-hidden">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Email</span>
-                      <span className="text-sm font-semibold text-gray-800 truncate">{cvData?.email || 'Chưa cập nhật'}</span>
-                    </div>
+                    {isOwnProfile && (
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute bottom-1 right-1 w-9 h-9 bg-linear-to-r from-purple-500 to-blue-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+                      >
+                        <Camera size={16} />
+                      </button>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                      <Phone size={16} />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Điện thoại</span>
-                      <span className="text-sm font-semibold text-gray-800">{cvData?.phone || 'Chưa cập nhật'}</span>
-                    </div>
-                  </div>
+                  <h2 className="text-2xl font-black font-display text-gray-900 mb-1 leading-tight">{displayName} {cvData?.gender === 'Nam' ? '♂️' : cvData?.gender === 'Nữ' ? '♀️' : cvData?.gender === 'Khác' ? '⚧️' : ''}</h2>
+                  <p className="text-[15px] font-medium text-indigo-600 mb-5">{displayTitle}</p>
 
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                      <MapPin size={16} />
-                    </div>
-                    <div className="flex flex-col w-full">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Địa điểm</span>
-                      <span className="text-sm font-semibold text-gray-800">{cvData?.address || 'Chưa cập nhật'}</span>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center shrink-0">
-                      <Calendar size={16} />
-                    </div>
-                    <div className="flex flex-col w-full">
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Ngày sinh</span>
-                      <span className="text-sm font-semibold text-gray-800">
-                        {cvData?.dateOfBirth ? new Date(cvData.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                  {/* Divider */}
+                  <div className="w-full h-px bg-gray-100 mb-6"></div>
 
-                {/* Social Links */}
-                <div className="w-full mt-6 pt-5 border-t border-gray-100 flex gap-3 justify-center">
-                  <a href={cvData?.github || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-600 hover:bg-indigo-50 flex items-center justify-center transition-all shadow-sm" title="Github">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg>
-                  </a>
-                  <a href={cvData?.linkedIn || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all shadow-sm" title="LinkedIn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" /></svg>
-                  </a>
-                  <a href={cvData?.website || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 text-gray-500 hover:text-purple-600 hover:border-purple-600 hover:bg-purple-50 flex items-center justify-center transition-all shadow-sm" title="Website">
-                    <Globe size={18} />
-                  </a>
-                </div>
-
-              </div>
-
-              {/* CV File Management Section - NEW */}
-              <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 flex flex-col group relative">
-                <h3 className="text-lg font-bold font-display text-gray-900 mb-4 flex items-center gap-2">
-                  <FileText size={20} className="text-indigo-600" />
-                  CV đã tải lên
-                </h3>
-
-                {cvData?.fileUrl ? (
-                  <div className="flex flex-col gap-4">
-                    <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-4 group/file relative">
-                      <div className="w-12 h-12 rounded-lg bg-red-50 text-red-500 flex items-center justify-center shrink-0 shadow-sm border border-red-100">
-                        <FileText size={24} />
+                  {/* Contact Info List */}
+                  <div className="w-full flex flex-col gap-4 text-left">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                        <Mail size={16} />
                       </div>
                       <div className="flex flex-col overflow-hidden">
-                        <span className="text-sm font-bold text-gray-800 truncate pr-8" title={cvData.fileUrl}>
-                          {'CV'}
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Email</span>
+                        <span className="text-sm font-semibold text-gray-800 truncate">{cvData?.email || 'Chưa cập nhật'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                        <Phone size={16} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Điện thoại</span>
+                        <span className="text-sm font-semibold text-gray-800">{cvData?.phone || 'Chưa cập nhật'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                        <MapPin size={16} />
+                      </div>
+                      <div className="flex flex-col w-full">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Địa điểm</span>
+                        <span className="text-sm font-semibold text-gray-800">{cvData?.address || 'Chưa cập nhật'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center shrink-0">
+                        <Calendar size={16} />
+                      </div>
+                      <div className="flex flex-col w-full">
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Ngày sinh</span>
+                        <span className="text-sm font-semibold text-gray-800">
+                          {cvData?.dateOfBirth ? new Date(cvData.dateOfBirth).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}
                         </span>
-                        <span className="text-[12px] text-gray-500 mt-0.5">
-                          Ngày tải: {cvData.uploadDate ? new Date(cvData.uploadDate).toLocaleDateString('vi-VN') : 'N/A'}
-                        </span>
-                        <div className="flex items-center gap-2 mt-2">
-                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase tracking-wider">Mặc định</span>
-                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase tracking-wider">
-                            {getFileExtension(cvData.fileUrl)}
-                          </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Social Links */}
+                  <div className="w-full mt-6 pt-5 border-t border-gray-100 flex gap-3 justify-center">
+                    <a href={cvData?.github || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-600 hover:bg-indigo-50 flex items-center justify-center transition-all shadow-sm" title="Github">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg>
+                    </a>
+                    <a href={cvData?.linkedIn || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all shadow-sm" title="LinkedIn">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" /></svg>
+                    </a>
+                    <a href={cvData?.website || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 text-gray-500 hover:text-purple-600 hover:border-purple-600 hover:bg-purple-50 flex items-center justify-center transition-all shadow-sm" title="Website">
+                      <Globe size={18} />
+                    </a>
+                  </div>
+
+                </div>
+
+                {/* CV File Management Section - NEW */}
+                <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 flex flex-col group relative">
+                  <h3 className="text-lg font-bold font-display text-gray-900 mb-4 flex items-center gap-2">
+                    <FileText size={20} className="text-indigo-600" />
+                    CV đã tải lên
+                  </h3>
+
+                  {cvData?.fileUrl ? (
+                    <div className="flex flex-col gap-4">
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-4 group/file relative">
+                        <div className="w-12 h-12 rounded-lg bg-red-50 text-red-500 flex items-center justify-center shrink-0 shadow-sm border border-red-100">
+                          <FileText size={24} />
                         </div>
+                        <div className="flex flex-col overflow-hidden">
+                          <span className="text-sm font-bold text-gray-800 truncate pr-8" title={cvData.fileUrl}>
+                            {'CV'}
+                          </span>
+                          <span className="text-[12px] text-gray-500 mt-0.5">
+                            Ngày tải: {cvData.uploadDate ? new Date(cvData.uploadDate).toLocaleDateString('vi-VN') : 'N/A'}
+                          </span>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase tracking-wider">Mặc định</span>
+                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded uppercase tracking-wider">
+                              {getFileExtension(cvData.fileUrl)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {isOwnProfile && (
+                          <button
+                            onClick={handleDeleteCv}
+                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer opacity-0 group-hover/file:opacity-100"
+                            title="Xóa CV"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
 
-                      <button
-                        onClick={handleDeleteCv}
-                        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer opacity-0 group-hover/file:opacity-100"
-                        title="Xóa CV"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => {
+                            setViewerFileUrl(cvData.fileUrl);
+                            setIsViewerOpen(true);
+                          }}
+                          className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors cursor-pointer"
+                        >
+                          <FileSearch size={16} />
+                          Xem CV
+                        </button>
+                        {isOwnProfile && (
+                          <button
+                            onClick={() => setIsCvModalOpen(true)}
+                            className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 text-sm font-bold hover:bg-indigo-100 transition-colors cursor-pointer"
+                          >
+                            <PenLine size={16} />
+                            Đổi file
+                          </button>
+                        )}
+                      </div>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <a
-                        href={`/cvs/${cvData.fileUrl}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-50 transition-colors"
-                      >
-                        <ExternalLink size={16} />
-                        Xem CV
-                      </a>
-                      <button
-                        onClick={() => setIsCvModalOpen(true)}
-                        className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 text-sm font-bold hover:bg-indigo-100 transition-colors cursor-pointer"
-                      >
-                        <PenLine size={16} />
-                        Đổi file
-                      </button>
+                  ) : (
+                    <div className="flex flex-col items-center text-center py-6 px-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                      <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-slate-300 mb-3 shadow-sm">
+                        <FileText size={32} />
+                      </div>
+                      <p className="text-sm font-semibold text-gray-500 mb-4">Bạn chưa tải file CV lên hệ thống</p>
+                      {isOwnProfile && (
+                        <button
+                          onClick={() => setIsCvModalOpen(true)}
+                          className="bg-linear-to-r from-purple-500 to-blue-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-sm shadow-indigo-100 cursor-pointer"
+                        >
+                          Tải CV ngay
+                        </button>
+                      )}
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center text-center py-6 px-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                    <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-slate-300 mb-3 shadow-sm">
-                      <FileText size={32} />
-                    </div>
-                    <p className="text-sm font-semibold text-gray-500 mb-4">Bạn chưa tải file CV lên hệ thống</p>
-                    <button
-                      onClick={() => setIsCvModalOpen(true)}
-                      className="bg-linear-to-r from-purple-500 to-blue-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-sm shadow-indigo-100 cursor-pointer"
-                    >
-                      Tải CV ngay
-                    </button>
-                  </div>
-                )}
-
-                <div className="mt-4 pt-4 border-t border-gray-50">
-                  <p className="text-[11px] text-gray-400 italic">
-                    * File CV sẽ được sử dụng để ứng tuyển vào các công việc bạn quan tâm.
-                  </p>
+                  )}
                 </div>
               </div>
-
-            </div>
+            )}
 
             {/* RIGHT COLUMN: Main Content Sections */}
-            <div className="lg:col-span-8 flex flex-col gap-6">
+            <div className={`${isDedicatedCVView ? 'col-span-12' : 'col-span-12 lg:col-span-8'} flex flex-col gap-6`}>
+              {isDedicatedCVView && (
+                <div className="bg-white rounded-2xl p-4 mb-6 shadow-sm border border-indigo-100 flex justify-between items-center no-print">
+                  <p className="text-sm font-bold text-indigo-600 flex items-center gap-2">
+                    <FileText size={18} /> Đang xem bản Online CV
+                  </p>
+                  <button
+                    onClick={() => window.print()}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-black hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20 cursor-pointer"
+                  >
+                    Tải file PDF / In
+                  </button>
+                </div>
+              )}
 
               {/* Introduction Section */}
               <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 group relative">
-                <button
-                  onClick={() => {
-                    setDraftAboutMe(cvData?.aboutMe || '');
-                    setIsAboutMeModalOpen(true);
-                  }}
-                  className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100"
-                >
-                  <PenLine size={18} />
-                </button>
+                {isOwnProfile && (
+                  <button
+                    onClick={() => {
+                      setDraftAboutMe(cvData?.aboutMe || '');
+                      setIsAboutMeModalOpen(true);
+                    }}
+                    className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100"
+                  >
+                    <PenLine size={18} />
+                  </button>
+                )}
                 <h3 className="text-xl font-bold font-display text-gray-900 mb-4 pb-2 border-b border-gray-100 flex items-center gap-3">
                   <div className="w-2 h-6 bg-linear-to-b from-purple-500 to-blue-500 rounded-full"></div>
                   Giới thiệu bản thân
@@ -522,15 +554,17 @@ const ProfilePage = () => {
 
               {/* Experience Section */}
               <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 group relative">
-                <button
-                  onClick={() => {
-                    setDraftExperiences(cvData?.experiences || []);
-                    setIsExperienceModalOpen(true);
-                  }}
-                  className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
-                >
-                  <PenLine size={18} />
-                </button>
+                {isOwnProfile && (
+                  <button
+                    onClick={() => {
+                      setDraftExperiences(cvData?.experiences || []);
+                      setIsExperienceModalOpen(true);
+                    }}
+                    className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                  >
+                    <PenLine size={18} />
+                  </button>
+                )}
                 <h3 className="text-xl font-bold font-display text-gray-900 mb-6 pb-2 border-b border-gray-100 flex items-center gap-3">
                   <div className="w-2 h-6 bg-linear-to-b from-indigo-500 to-blue-500 rounded-full"></div>
                   Kinh nghiệm làm việc
@@ -570,15 +604,17 @@ const ProfilePage = () => {
 
                 {/* Education Section */}
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 group relative">
-                  <button
-                    onClick={() => {
-                      setDraftEducations(cvData?.educations || []);
-                      setIsEducationModalOpen(true);
-                    }}
-                    className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
-                  >
-                    <PenLine size={18} />
-                  </button>
+                  {isOwnProfile && (
+                    <button
+                      onClick={() => {
+                        setDraftEducations(cvData?.educations || []);
+                        setIsEducationModalOpen(true);
+                      }}
+                      className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                    >
+                      <PenLine size={18} />
+                    </button>
+                  )}
                   <h3 className="text-xl font-bold font-display text-gray-900 mb-6 pb-2 border-b border-gray-100 flex items-center gap-3">
                     <div className="w-2 h-6 bg-linear-to-b from-blue-400 to-teal-400 rounded-full"></div>
                     Học vấn
@@ -605,15 +641,17 @@ const ProfilePage = () => {
 
                 {/* Skills Section */}
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 group relative">
-                  <button
-                    onClick={() => {
-                      setDraftSkills(cvData?.skills || []);
-                      setIsSkillsModalOpen(true);
-                    }}
-                    className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
-                  >
-                    <PenLine size={18} />
-                  </button>
+                  {isOwnProfile && (
+                    <button
+                      onClick={() => {
+                        setDraftSkills(cvData?.skills || []);
+                        setIsSkillsModalOpen(true);
+                      }}
+                      className="absolute top-6 right-6 p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer lg:opacity-0 lg:group-hover:opacity-100 z-10"
+                    >
+                      <PenLine size={18} />
+                    </button>
+                  )}
                   <h3 className="text-xl font-bold font-display text-gray-900 mb-6 pb-2 border-b border-gray-100 flex items-center gap-3">
                     <div className="w-2 h-6 bg-linear-to-b from-purple-500 to-pink-500 rounded-full"></div>
                     Kỹ năng
@@ -1080,7 +1118,14 @@ const ProfilePage = () => {
         </div>
       )}
 
-      <Footer />
+      <CVFileViewer
+        isOpen={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)}
+        fileUrl={viewerFileUrl}
+        fileName="Hồ sơ ứng viên"
+      />
+
+      {!isDedicatedCVView && <Footer />}
     </div>
   );
 };

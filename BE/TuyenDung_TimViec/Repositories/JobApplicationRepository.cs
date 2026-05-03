@@ -158,7 +158,7 @@ namespace TuyenDung_TimViec.Repositories
             {
                 await connection.OpenAsync();
                 string query = @"
-                    SELECT a.*, cand.FullName as CandidateName, cv.Title as CVTitle
+                    SELECT a.*, cand.FullName as CandidateName, cand.UserId as CandidateUserId, cv.Title as CVTitle
                     FROM Applications a
                     INNER JOIN Candidates cand ON a.CandidateId = cand.Id
                     LEFT JOIN CVs cv ON a.CVId = cv.Id
@@ -184,7 +184,8 @@ namespace TuyenDung_TimViec.Repositories
                                 CVType = reader.IsDBNull(reader.GetOrdinal("CVType")) ? "Online" : reader.GetString(reader.GetOrdinal("CVType")),
                                 EmployerNote = reader.IsDBNull(reader.GetOrdinal("EmployerNote")) ? null : reader.GetString(reader.GetOrdinal("EmployerNote")),
                                 CandidateName = reader.GetString(reader.GetOrdinal("CandidateName")),
-                                CVTitle = reader.IsDBNull(reader.GetOrdinal("CVTitle")) ? "Online CV" : reader.GetString(reader.GetOrdinal("CVTitle"))
+                                CVTitle = reader.IsDBNull(reader.GetOrdinal("CVTitle")) ? "Online CV" : reader.GetString(reader.GetOrdinal("CVTitle")),
+                                CandidateUserId = reader.IsDBNull(reader.GetOrdinal("CandidateUserId")) ? (Guid?)null : reader.GetGuid(reader.GetOrdinal("CandidateUserId"))
                             });
                         }
                     }
@@ -252,7 +253,7 @@ namespace TuyenDung_TimViec.Repositories
             {
                 await connection.OpenAsync();
                 string query = @"
-                    SELECT a.*, jp.Title as JobTitle, cand.FullName as CandidateName, cand.Avatar as CandidateAvatar, cv.Title as CVTitle
+                    SELECT a.*, jp.Title as JobTitle, cand.FullName as CandidateName, cand.Avatar as CandidateAvatar, cand.UserId as CandidateUserId, cv.Title as CVTitle, cv.FileUrl as CVFileUrl
                     FROM Applications a
                     INNER JOIN JobPosts jp ON a.JobPostId = jp.Id
                     INNER JOIN Candidates cand ON a.CandidateId = cand.Id
@@ -281,7 +282,9 @@ namespace TuyenDung_TimViec.Repositories
                                 JobTitle = reader.GetString(reader.GetOrdinal("JobTitle")),
                                 CandidateName = reader.GetString(reader.GetOrdinal("CandidateName")),
                                 CandidateAvatar = reader.IsDBNull(reader.GetOrdinal("CandidateAvatar")) ? null : reader.GetString(reader.GetOrdinal("CandidateAvatar")),
-                                CVTitle = reader.IsDBNull(reader.GetOrdinal("CVTitle")) ? "Online CV" : reader.GetString(reader.GetOrdinal("CVTitle"))
+                                CVTitle = reader.IsDBNull(reader.GetOrdinal("CVTitle")) ? "Online CV" : reader.GetString(reader.GetOrdinal("CVTitle")),
+                                CVFileUrl = reader.IsDBNull(reader.GetOrdinal("CVFileUrl")) ? null : reader.GetString(reader.GetOrdinal("CVFileUrl")),
+                                CandidateUserId = reader.IsDBNull(reader.GetOrdinal("CandidateUserId")) ? (Guid?)null : reader.GetGuid(reader.GetOrdinal("CandidateUserId"))
                             });
                         }
                     }

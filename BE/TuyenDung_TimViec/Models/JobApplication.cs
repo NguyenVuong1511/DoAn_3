@@ -25,5 +25,7 @@ namespace TuyenDung_TimViec.Models
         public string? CVTitle { get; set; }
         public string? CandidateName { get; set; }
         public string? CandidateAvatar { get; set; }
+        public string? CVFileUrl { get; set; }
+        public Guid? CandidateUserId { get; set; }
     }
 }

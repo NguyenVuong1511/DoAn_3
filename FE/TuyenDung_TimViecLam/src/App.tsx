@@ -29,6 +29,8 @@ function App() {
         <Route path="/saved-jobs" element={<SavedJobsPage />} />
         <Route path="/applied-jobs" element={<AppliedJobsPage />} />
         <Route path="/interviews" element={<InterviewsPage />} />
+        <Route path="/candidates/:id/cv/:cvId" element={<ProfilePage />} />
+        <Route path="/candidates/:id" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   )

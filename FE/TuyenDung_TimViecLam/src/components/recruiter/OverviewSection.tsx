@@ -7,8 +7,10 @@ import {
   BarChart3,
   ArrowUpRight,
   AlertCircle,
-  MoreHorizontal
+  FileSearch
 } from 'lucide-react';
+import { useState } from 'react';
+import CVFileViewer from '../common/CVFileViewer';
 
 
 interface OverviewSectionProps {
@@ -24,6 +26,25 @@ interface OverviewSectionProps {
 }
 
 const OverviewSection = ({ jobs, allApplications, stats, onSwitchTab }: OverviewSectionProps) => {
+  // CV Viewer state
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [viewerFileUrl, setViewerFileUrl] = useState('');
+  const [viewerFileName, setViewerFileName] = useState('');
+
+  const handleViewCV = (app: any) => {
+    if (app.cvType === 'Online') {
+      setViewerFileUrl(`/candidates/${app.candidateUserId}/cv/${app.cvId}`);
+      setViewerFileName(`Online CV - ${app.candidateName}`);
+      setIsViewerOpen(true);
+    } else if (app.cvFileUrl) {
+      setViewerFileUrl(app.cvFileUrl);
+      setViewerFileName(`CV File - ${app.candidateName}`);
+      setIsViewerOpen(true);
+    } else {
+      alert('Không tìm thấy file CV.');
+    }
+  };
+
   return (
     <div className="flex flex-col gap-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
@@ -117,9 +138,22 @@ const OverviewSection = ({ jobs, allApplications, stats, onSwitchTab }: Overview
                     <StatusBadge status={app.status || 'Pending'} />
                   </td>
                   <td className="py-6 px-4 text-right">
-                    <button className="w-10 h-10 rounded-xl bg-white border border-slate-100 text-slate-300 hover:text-indigo-600 hover:border-indigo-100 transition-all flex items-center justify-center ml-auto">
-                      <MoreHorizontal size={20} />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleViewCV(app)}
+                        className="w-10 h-10 rounded-xl bg-white border border-slate-100 text-slate-300 hover:text-indigo-600 hover:border-indigo-100 transition-all flex items-center justify-center cursor-pointer"
+                        title="Xem CV"
+                      >
+                        <FileSearch size={18} />
+                      </button>
+                      <button
+                        onClick={() => window.open(`/candidates/${app.candidateUserId || app.candidateId}`, '_blank')}
+                        className="w-10 h-10 rounded-xl bg-white border border-slate-100 text-slate-300 hover:text-indigo-600 hover:border-indigo-100 transition-all flex items-center justify-center cursor-pointer"
+                        title="Xem hồ sơ"
+                      >
+                        <ArrowUpRight size={18} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -200,6 +234,13 @@ const OverviewSection = ({ jobs, allApplications, stats, onSwitchTab }: Overview
         </div>
 
       </div>
+
+      <CVFileViewer
+        isOpen={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)}
+        fileUrl={viewerFileUrl}
+        fileName={viewerFileName}
+      />
     </div>
   );
 };
