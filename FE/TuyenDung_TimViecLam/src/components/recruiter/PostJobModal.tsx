@@ -154,10 +154,11 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
     try {
       setSubmitting(true);
       const payload = {
+        ...(jobToEdit || {}),
         ...formData,
         companyId,
         recruiterId: userId,
-        postDate: jobToEdit ? (jobToEdit.postDate || jobToEdit.PostDate) : new Date().toISOString()
+        postDate: jobToEdit ? (jobToEdit.postDate || jobToEdit.PostDate || new Date().toISOString()) : new Date().toISOString()
       };
 
       const res = jobToEdit
