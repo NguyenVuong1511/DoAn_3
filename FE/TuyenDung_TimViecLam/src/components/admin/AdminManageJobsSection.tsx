@@ -27,10 +27,10 @@ const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, l
   const [statusFilter, setStatusFilter] = useState('All');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-  const handleToggleStatus = async (jobId: string) => {
+  const handleToggleStatus = async (jobId: string, action: string) => {
     try {
       setIsUpdating(jobId);
-      const res = await toggleJobStatusAdmin(jobId);
+      const res = await toggleJobStatusAdmin(jobId, action);
       if (res.success) {
         message.success(res.message || "Cập nhật trạng thái thành công!");
         refreshData();
@@ -111,30 +111,64 @@ const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, l
       key: 'action',
       align: 'right',
       render: (_, record) => {
-        const isActive = record.status?.toLowerCase() === 'active' || record.status?.toLowerCase() === 'approved';
+        const s = record.status?.toLowerCase();
+        const isPending = s === 'pending';
+        const isActive = s === 'active' || s === 'approved';
+        const isInactive = s === 'inactive';
+        const isRejected = s === 'rejected';
+
         return (
           <Space>
             <Tooltip title="Xem chi tiết">
               <Button size="small" icon={<EyeOutlined />} shape="circle" />
             </Tooltip>
-            <Popconfirm
-              title={`Bạn có chắc muốn ${isActive ? 'khóa' : 'duyệt'} tin này?`}
-              onConfirm={() => handleToggleStatus(record.id)}
-              okText="Đồng ý"
-              cancelText="Hủy"
-              okButtonProps={{ danger: isActive }}
-            >
-              {!isActive ? (
-                <Button 
-                  type="primary" 
-                  size="small" 
-                  icon={<CheckCircleOutlined />}
-                  loading={isUpdating === record.id}
-                  style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
+            
+            {isPending && (
+              <Space>
+                <Popconfirm
+                  title="Xác nhận duyệt bài đăng này?"
+                  onConfirm={() => handleToggleStatus(record.id, 'approve')}
+                  okText="Duyệt"
+                  cancelText="Hủy"
                 >
-                  Duyệt
-                </Button>
-              ) : (
+                  <Button 
+                    type="primary" 
+                    size="small" 
+                    icon={<CheckCircleOutlined />}
+                    loading={isUpdating === record.id}
+                    style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600, background: '#10b981', borderColor: '#10b981' }}
+                  >
+                    Duyệt
+                  </Button>
+                </Popconfirm>
+                <Popconfirm
+                  title="Từ chối bài đăng này?"
+                  onConfirm={() => handleToggleStatus(record.id, 'reject')}
+                  okText="Từ chối"
+                  cancelText="Hủy"
+                  okButtonProps={{ danger: true }}
+                >
+                  <Button 
+                    danger
+                    size="small" 
+                    icon={<StopOutlined />}
+                    loading={isUpdating === record.id}
+                    style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
+                  >
+                    Từ chối
+                  </Button>
+                </Popconfirm>
+              </Space>
+            )}
+
+            {(isActive || isInactive) && (
+              <Popconfirm
+                title="Khóa bài đăng này?"
+                onConfirm={() => handleToggleStatus(record.id, 'reject')}
+                okText="Khóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true }}
+              >
                 <Button 
                   danger 
                   size="small" 
@@ -144,8 +178,27 @@ const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, l
                 >
                   Khóa
                 </Button>
-              )}
-            </Popconfirm>
+              </Popconfirm>
+            )}
+
+            {isRejected && (
+              <Popconfirm
+                title="Duyệt lại bài đăng này?"
+                onConfirm={() => handleToggleStatus(record.id, 'approve')}
+                okText="Duyệt lại"
+                cancelText="Hủy"
+              >
+                <Button 
+                  type="primary" 
+                  size="small" 
+                  icon={<CheckCircleOutlined />}
+                  loading={isUpdating === record.id}
+                  style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
+                >
+                  Duyệt lại
+                </Button>
+              </Popconfirm>
+            )}
           </Space>
         );
       },

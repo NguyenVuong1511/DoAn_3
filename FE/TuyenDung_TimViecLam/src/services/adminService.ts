@@ -42,8 +42,8 @@ export async function getAllJobsForAdmin(pageNumber: number = 1, pageSize: numbe
 /**
  * Duyệt hoặc Khóa bài đăng tuyển dụng
  */
-export async function toggleJobStatusAdmin(jobId: string): Promise<ApiResponse<boolean>> {
-    const { data } = await axiosInstance.patch<ApiResponse<boolean>>(`/admin/jobs/${jobId}/status`);
+export async function toggleJobStatusAdmin(jobId: string, action?: string): Promise<ApiResponse<boolean>> {
+    const { data } = await axiosInstance.patch<ApiResponse<boolean>>(`/admin/jobs/${jobId}/status${action ? `?action=${action}` : ''}`);
     return data;
 }
 

@@ -23,7 +23,8 @@ namespace TuyenDung_TimViec.Repositories
         Task<bool> CreateJobPostAsync(JobPost jobPost);
         Task<bool> UpdateJobPostAsync(JobPost jobPost);
         Task<bool> DeleteJobPostAsync(Guid id);
-        Task<bool> ToggleJobPostStatusAsync(Guid id);
+        Task<bool> AdminUpdateJobStatusAsync(Guid id, string action);
+        Task<bool> RecruiterToggleJobStatusAsync(Guid id);
         Task<object> GetStatsAsync();
     }
 
@@ -405,11 +406,38 @@ namespace TuyenDung_TimViec.Repositories
             }
         }
 
-        public async Task<bool> ToggleJobPostStatusAsync(Guid id)
+        public async Task<bool> AdminUpdateJobStatusAsync(Guid id, string action)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "UPDATE JobPosts SET Status = CASE WHEN Status = 'Active' THEN 'Inactive' ELSE 'Active' END WHERE Id = @Id";
+                string newStatus = action.ToLower() == "approve" ? "Active" : "Rejected";
+                string query = "UPDATE JobPosts SET Status = @Status WHERE Id = @Id";
+                
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+                    command.Parameters.AddWithValue("@Status", newStatus);
+                    await connection.OpenAsync();
+                    int result = await command.ExecuteNonQueryAsync();
+                    return result > 0;
+                }
+            }
+        }
+
+        public async Task<bool> RecruiterToggleJobStatusAsync(Guid id)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                // Chỉ cho phép chuyển đổi giữa Active và Inactive nếu không bị Rejected hoặc Pending
+                string query = @"
+                    UPDATE JobPosts 
+                    SET Status = CASE 
+                        WHEN Status = 'Active' THEN 'Inactive' 
+                        WHEN Status = 'Inactive' THEN 'Active' 
+                        ELSE Status 
+                    END 
+                    WHERE Id = @Id AND Status NOT IN ('Rejected', 'Pending')";
+                
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@Id", id);

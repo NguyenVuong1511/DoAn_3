@@ -160,9 +160,9 @@ namespace TuyenDung_TimViec.Controllers
         {
             try
             {
-                bool result = await _jobPostRepository.ToggleJobPostStatusAsync(id);
+                bool result = await _jobPostRepository.RecruiterToggleJobStatusAsync(id);
                 if (result) return Ok(RepositoryResult<object>.Ok(null, "Cập nhật trạng thái thành công!"));
-                return BadRequest(RepositoryResult<object>.Fail("Không thể cập nhật trạng thái."));
+                return BadRequest(RepositoryResult<object>.Fail("Không thể cập nhật trạng thái. Tin tuyển dụng có thể đang chờ duyệt hoặc đã bị từ chối bởi Admin."));
             }
             catch (Exception ex)
             {

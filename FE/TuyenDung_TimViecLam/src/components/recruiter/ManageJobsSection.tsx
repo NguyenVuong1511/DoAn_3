@@ -138,6 +138,19 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{job.jobTypeName}</span>
                         <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">{job.locationName}</span>
+                        <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
+                        {job.status === 'Pending' && (
+                          <span className="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-md text-[9px] font-black uppercase tracking-wider border border-amber-100">Chờ duyệt</span>
+                        )}
+                        {job.status === 'Rejected' && (
+                          <span className="px-2 py-0.5 bg-rose-50 text-rose-600 rounded-md text-[9px] font-black uppercase tracking-wider border border-rose-100">Bị từ chối</span>
+                        )}
+                        {job.status === 'Active' && (
+                          <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-md text-[9px] font-black uppercase tracking-wider border border-emerald-100">Hiển thị</span>
+                        )}
+                        {job.status === 'Inactive' && (
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 rounded-md text-[9px] font-black uppercase tracking-wider border border-slate-100">Đã ẩn</span>
+                        )}
                       </div>
                     </td>
                     <td className="py-6 px-4">
@@ -174,22 +187,38 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
                           <Eye size={18} />
                         </button>
                         <button
-                          onClick={() => handleToggleStatus(job.id)}
-                          title={job.status === 'Active' ? 'Ẩn tin' : 'Hiện tin'}
-                          className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${job.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200'
-                            }`}
+                          onClick={() => job.status !== 'Rejected' && job.status !== 'Pending' && handleToggleStatus(job.id)}
+                          disabled={job.status === 'Rejected' || job.status === 'Pending'}
+                          title={job.status === 'Rejected' ? 'Bị Admin từ chối' : (job.status === 'Pending' ? 'Đang chờ duyệt' : (job.status === 'Active' ? 'Ẩn tin' : 'Hiện tin'))}
+                          className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${
+                            job.status === 'Rejected' || job.status === 'Pending' 
+                            ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed opacity-50' 
+                            : job.status === 'Active' 
+                              ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100 cursor-pointer' 
+                              : 'bg-slate-100 text-slate-500 border-slate-200 hover:bg-slate-200 cursor-pointer'
+                          }`}
                         >
                           {job.status === 'Active' ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
                         </button>
                         <button
-                          onClick={() => setEditingJob(job)}
-                          className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-amber-100"
+                          onClick={() => job.status !== 'Rejected' && setEditingJob(job)}
+                          disabled={job.status === 'Rejected' || job.status === 'Pending'}
+                          className={`w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-transparent transition-all ${
+                            job.status === 'Rejected' || job.status === 'Pending'
+                            ? 'text-slate-300 cursor-not-allowed opacity-50'
+                            : 'text-slate-400 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-100 cursor-pointer'
+                          }`}
                         >
                           <Edit size={18} />
                         </button>
                         <button
-                          onClick={() => handleDeleteJob(job.id)}
-                          className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all flex items-center justify-center cursor-pointer border border-transparent hover:border-rose-100"
+                          onClick={() => job.status !== 'Rejected' && handleDeleteJob(job.id)}
+                          disabled={job.status === 'Rejected' || job.status === 'Pending'}
+                          className={`w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-transparent transition-all ${
+                            job.status === 'Rejected' || job.status === 'Pending'
+                            ? 'text-slate-300 cursor-not-allowed opacity-50'
+                            : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 cursor-pointer'
+                          }`}
                         >
                           <Trash2 size={18} />
                         </button>

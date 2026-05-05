@@ -52,9 +52,11 @@ namespace TuyenDung_TimViec.Controllers
         }
 
         [HttpPatch("jobs/{id}/status")]
-        public async Task<IActionResult> ToggleJobStatus(Guid id)
+        public async Task<IActionResult> UpdateJobStatus(Guid id, [FromQuery] string action)
         {
-            var result = await _jobRepo.ToggleJobPostStatusAsync(id);
+            // Nếu không có action, mặc định là toggle (nhưng ta nên khuyến khích dùng action)
+            // Ở đây ta sử dụng logic: nếu action là 'approve' thì set Active, ngược lại (hoặc 'reject') thì set Rejected
+            var result = await _jobRepo.AdminUpdateJobStatusAsync(id, action ?? "approve");
             if (result) return Ok(RepositoryResult<object>.Ok(null, "Cập nhật trạng thái việc làm thành công!"));
             return BadRequest(RepositoryResult<object>.Fail("Không thể cập nhật trạng thái việc làm."));
         }
