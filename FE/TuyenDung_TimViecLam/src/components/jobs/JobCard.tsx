@@ -93,7 +93,7 @@ const JobCard = ({ job, index = 0 }: JobCardProps) => {
                         {job.companyLogo && !failedImage ? (
                             <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center p-1.5 shadow-sm group-hover:border-indigo-100 transition-colors">
                                 <img
-                                    src={job.companyLogo ? `/images/${job.companyLogo}` : 'https://placehold.co/150x150?text=No+Logo'}
+                                    src={job.companyLogo ? (job.companyLogo.startsWith('http') ? job.companyLogo : `/images/${job.companyLogo}`) : 'https://placehold.co/150x150?text=No+Logo'}
                                     alt={job.companyName}
                                     className="w-full h-full object-contain rounded-[12px]"
                                     onError={(e) => {

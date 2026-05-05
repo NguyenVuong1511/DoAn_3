@@ -17,7 +17,8 @@ namespace TuyenDung_TimViec.Repositories
             Guid? levelId = null, 
             Guid? experienceId = null, 
             decimal? minSalary = null, 
-            decimal? maxSalary = null);
+            decimal? maxSalary = null,
+            string status = null);
         Task<JobPost?> GetJobPostByIdAsync(Guid id);
         Task<List<JobPost>> GetJobPostsByCompanyIdAsync(Guid companyId);
         Task<bool> CreateJobPostAsync(JobPost jobPost);
@@ -83,6 +84,7 @@ namespace TuyenDung_TimViec.Repositories
                 LEFT JOIN JobTypes jt ON jp.JobTypeId = jt.Id
                 LEFT JOIN Levels jl ON jp.LevelId = jl.Id
                 LEFT JOIN Experiences el ON jp.ExperienceId = el.Id
+                WHERE jp.Status = 'Active'
                 ORDER BY jp.PostDate DESC";
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -113,7 +115,8 @@ namespace TuyenDung_TimViec.Repositories
             Guid? levelId = null, 
             Guid? experienceId = null, 
             decimal? minSalary = null, 
-            decimal? maxSalary = null)
+            decimal? maxSalary = null,
+            string status = null)
         {
             var jobPosts = new List<JobPost>();
             int totalCount = 0;
@@ -168,6 +171,12 @@ namespace TuyenDung_TimViec.Repositories
             {
                 whereClauses.Add("jp.MinSalary <= @maxSalary");
                 parameters.Add(new SqlParameter("@maxSalary", maxSalary.Value));
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                whereClauses.Add("jp.Status = @status");
+                parameters.Add(new SqlParameter("@status", status));
             }
 
             string whereSql = whereClauses.Count > 0 ? "WHERE " + string.Join(" AND ", whereClauses) : "";

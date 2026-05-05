@@ -38,7 +38,7 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
     try {
       const res = await toggleJobStatusApi(jobId);
       if (res.success) {
-        refreshData();
+        (refreshData as any)(true);
       }
     } catch (error) {
       console.error("Toggle status error:", error);
@@ -50,7 +50,7 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
       try {
         const res = await deleteJobApi(jobId);
         if (res.success) {
-          refreshData();
+          (refreshData as any)(true);
         }
       } catch (error) {
         console.error("Delete job error:", error);

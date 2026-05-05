@@ -41,9 +41,9 @@ const RecruiterDashboardPage = () => {
     }
   }, [userId]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const companyRes = await getMyCompanyApi(userId!);
       if (companyRes.success) {
         setCompany(companyRes.data);
@@ -66,7 +66,7 @@ const RecruiterDashboardPage = () => {
     } catch (error) {
       console.error("Dashboard error:", error);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 

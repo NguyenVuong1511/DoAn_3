@@ -184,7 +184,7 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
 
       if (res.success) {
         alert(jobToEdit ? 'Cập nhật tin tuyển dụng thành công!' : 'Đăng tin tuyển dụng thành công!');
-        onSuccess?.();
+        (onSuccess as any)(true);
         onClose();
       }
     } catch (error) {

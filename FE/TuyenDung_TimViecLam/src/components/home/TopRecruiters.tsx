@@ -73,7 +73,7 @@ const TopRecruiters = () => {
                             key={index}
                             className="flex max-w-[400px] items-center gap-4 bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-[0_2px_15px_rgb(0,0,0,0.03)] hover:shadow-md hover:border-indigo-100 transition-all min-w-[200px] shrink-0 cursor-pointer"
                         >
-                            <img src={`/images/${c.logoUrl}`} alt="company logo" className='w-auto h-10 rounded-xl' />
+                            <img src={`/images/${c.logo}`} alt="company logo" className='w-auto h-10 rounded-xl' />
                             <span className="font-bold text-gray-800 text-sm">
                                 {c.name}
                             </span>

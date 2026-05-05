@@ -63,7 +63,8 @@ namespace TuyenDung_TimViec.Controllers
                     lvlId, 
                     expId, 
                     minSal, 
-                    maxSal);
+                    maxSal,
+                    "Active");
                 var result = new
                 {
                     Jobs = jobs,
