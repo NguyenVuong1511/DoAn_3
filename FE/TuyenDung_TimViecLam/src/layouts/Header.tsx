@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronDown, User, LogOut, Menu, X, History, Heart, LayoutDashboard, Settings, Calendar, Users } from 'lucide-react';
+import { ChevronDown, User, LogOut, Menu, X, History, Heart, LayoutDashboard, Settings, Calendar, Users, Briefcase, Building2, ChevronRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { logout, getToken, getUserRole, getUserId } from '../services/authService';
 import { getCVByUserId } from '../services/cvService';
@@ -105,23 +105,74 @@ const Header = () => {
           </div>
 
           {/* Navigation - Desktop */}
-          <nav className="hidden lg:flex items-center gap-6">
-            <Link to="/jobs" className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-indigo-600 transition-colors font-sans group">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
+            <Link to="/jobs" className="flex items-center gap-1.5 text-sm font-bold text-gray-700 hover:text-indigo-600 transition-all font-sans group relative py-2">
               Việc làm
               <ChevronDown size={14} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
+              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-600 group-hover:w-full transition-all duration-300" />
             </Link>
-            <a href="#" className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-indigo-600 transition-colors font-sans group">
-              Hồ sơ CV
-              <ChevronDown size={14} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
-            </a>
-            <a href="#" className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-indigo-600 transition-colors font-sans group">
+
+            <Link to="/companies" className="flex items-center gap-1.5 text-sm font-bold text-gray-700 hover:text-indigo-600 transition-all font-sans group relative py-2">
               Công ty
               <ChevronDown size={14} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
-            </a>
-            <a href="#" className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-indigo-600 transition-colors font-sans group">
-              Tin tức
-              <ChevronDown size={14} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
-            </a>
+              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-600 group-hover:w-full transition-all duration-300" />
+            </Link>
+
+            {role === 'CANDIDATE' && (
+              <Link to="/profile" className="flex items-center gap-1.5 text-sm font-bold text-gray-700 hover:text-indigo-600 transition-all font-sans group relative py-2">
+                Hồ sơ & CV
+                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-600 group-hover:w-full transition-all duration-300" />
+              </Link>
+            )}
+
+            <div className="relative group py-2">
+              <button className="flex items-center gap-1.5 text-sm font-bold text-gray-700 hover:text-indigo-600 transition-all font-sans outline-none cursor-pointer">
+                Tiện ích
+                <ChevronDown size={14} className="text-gray-400 group-hover:text-indigo-600 transition-colors" />
+              </button>
+              
+              {/* Tool Dropdown */}
+              <div className="absolute top-full left-0 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-3 mt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                <div className="px-4 mb-2">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Công cụ hỗ trợ</span>
+                </div>
+                <Link to="/salary-calculator" className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors group/item">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover/item:bg-emerald-600 group-hover/item:text-white transition-colors">
+                    <History size={18} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-gray-800">Tính lương Gross - Net</div>
+                    <div className="text-[10px] text-gray-500 font-medium">Chính xác, cập nhật mới nhất</div>
+                  </div>
+                </Link>
+                {role !== 'RECRUITER' && (
+                  <Link to="/profile" className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors group/item">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover/item:bg-indigo-600 group-hover/item:text-white transition-colors">
+                      <History size={18} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-bold text-gray-800">Mẫu CV chuyên nghiệp</div>
+                      <div className="text-[10px] text-gray-500 font-medium">Đa dạng, ấn tượng nhà tuyển dụng</div>
+                    </div>
+                  </Link>
+                )}
+                <div className="h-px bg-gray-100 my-2"></div>
+                <Link to="#" className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors group/item">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors">
+                    <History size={18} />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-gray-800">Cẩm nang nghề nghiệp</div>
+                    <div className="text-[10px] text-gray-500 font-medium">Bí kíp xin việc thành công</div>
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            <Link to="#" className="flex items-center gap-1.5 text-sm font-bold text-gray-700 hover:text-indigo-600 transition-all font-sans group relative py-2">
+              Cộng đồng
+              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-indigo-600 group-hover:w-full transition-all duration-300" />
+            </Link>
           </nav>
 
           {/* Right Section */}
@@ -276,25 +327,52 @@ const Header = () => {
 
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="lg:hidden absolute top-[72px] left-0 w-full bg-white border-b border-gray-100 shadow-lg py-4 px-4 flex flex-col gap-4 animate-in slide-in-from-top-2">
+        <div className="lg:hidden absolute top-[72px] left-0 w-full bg-white border-b border-gray-100 shadow-lg py-4 px-4 flex flex-col gap-4 animate-in slide-in-from-top-2 z-50">
           {/* Mobile Navigation Links */}
           <nav className="flex flex-col gap-2">
-            <a href="#" className="flex justify-between items-center px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-800 font-semibold transition-colors">
-              Việc làm
-              <ChevronDown size={18} className="text-gray-400" />
-            </a>
-            <a href="#" className="flex justify-between items-center px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-800 font-semibold transition-colors">
-              Hồ sơ CV
-              <ChevronDown size={18} className="text-gray-400" />
-            </a>
-            <a href="#" className="flex justify-between items-center px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-800 font-semibold transition-colors">
-              Công ty
-              <ChevronDown size={18} className="text-gray-400" />
-            </a>
-            <a href="#" className="flex justify-between items-center px-4 py-3 rounded-xl hover:bg-gray-50 text-gray-800 font-semibold transition-colors">
-              Tin tức
-              <ChevronDown size={18} className="text-gray-400" />
-            </a>
+            <Link to="/jobs" onClick={() => setMobileMenuOpen(false)} className="flex justify-between items-center px-4 py-4 rounded-2xl hover:bg-indigo-50 text-gray-800 font-bold transition-all border border-transparent hover:border-indigo-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                  <Briefcase size={20} />
+                </div>
+                Việc làm
+              </div>
+              <ChevronRight size={18} className="text-gray-400" />
+            </Link>
+
+            <Link to="/companies" onClick={() => setMobileMenuOpen(false)} className="flex justify-between items-center px-4 py-4 rounded-2xl hover:bg-indigo-50 text-gray-800 font-bold transition-all border border-transparent hover:border-indigo-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                  <Building2 size={20} />
+                </div>
+                Công ty
+              </div>
+              <ChevronRight size={18} className="text-gray-400" />
+            </Link>
+
+            {role === 'CANDIDATE' && (
+              <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="flex justify-between items-center px-4 py-4 rounded-2xl hover:bg-indigo-50 text-gray-800 font-bold transition-all border border-transparent hover:border-indigo-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <User size={20} />
+                  </div>
+                  Hồ sơ & CV
+                </div>
+                <ChevronRight size={18} className="text-gray-400" />
+              </Link>
+            )}
+
+            <div className="h-px bg-gray-100 mx-4 my-2"></div>
+
+            <Link to="/salary-calculator" onClick={() => setMobileMenuOpen(false)} className="flex justify-between items-center px-4 py-4 rounded-2xl hover:bg-emerald-50 text-gray-800 font-bold transition-all border border-transparent hover:border-emerald-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <History size={20} />
+                </div>
+                Tính lương Gross-Net
+              </div>
+              <ChevronRight size={18} className="text-gray-400" />
+            </Link>
           </nav>
 
           <div className="h-px bg-gray-100 mx-2 my-2"></div>
@@ -366,26 +444,6 @@ const Header = () => {
                         <LayoutDashboard size={18} />
                       </div>
                       Bảng điều khiển
-                    </Link>
-                    <Link
-                      to="/recruiter/dashboard"
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                        <History size={18} />
-                      </div>
-                      Quản lý tin đăng
-                    </Link>
-                    <Link
-                      to="/recruiter/dashboard"
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                        <Users size={18} />
-                      </div>
-                      Quản lý ứng viên
                     </Link>
                   </>
                 )}

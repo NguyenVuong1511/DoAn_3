@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { Company } from "../../types/companies.ts";
 import { getCompanies } from "../../services/companiesService.ts";
@@ -83,10 +84,13 @@ const TopRecruiters = () => {
             </div>
 
             <div className="flex justify-center px-4">
-                <button className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition-all shadow-lg shadow-slate-900/20 cursor-pointer">
+                <Link 
+                    to="/companies"
+                    className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition-all shadow-lg shadow-slate-900/20 cursor-pointer"
+                >
                     Xem tất cả công ty đối tác
                     <ArrowRight size={16} />
-                </button>
+                </Link>
             </div>
         </section>
     );

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
 import Header from '../layouts/Header';
 import Footer from '../layouts/Footer';
 import {
@@ -8,10 +7,12 @@ import {
 } from 'lucide-react';
 import CVFileViewer from '../components/common/CVFileViewer';
 import { getCVByUserId, uploadAvatar, updateCVDetail, uploadCVFile, deleteCVFile } from '../services/cvService';
-import { getUserId } from '../services/authService';
+import { getUserId, getUserRole } from '../services/authService';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { CV } from '../types/cv';
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
   const [cvData, setCvData] = useState<CV | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -196,9 +197,17 @@ const ProfilePage = () => {
 
   const { id, cvId } = useParams();
   const currentUserId = getUserId();
+  const role = (getUserRole() || '').toUpperCase();
   const targetUserId = id || currentUserId;
   const isOwnProfile = !id || id === currentUserId;
   const isDedicatedCVView = !!cvId;
+
+  // Redirect recruiter if trying to view their own "candidate" profile
+  useEffect(() => {
+    if (isOwnProfile && role === 'RECRUITER') {
+      navigate('/recruiter-profile');
+    }
+  }, [isOwnProfile, role, navigate]);
 
   // Removed mock user data, now using cvData directly
   useEffect(() => {
@@ -214,7 +223,12 @@ const ProfilePage = () => {
         if (response.success && response.data) {
           setCvData(response.data);
         } else {
-          setError(response.message || 'Không tìm thấy hồ sơ CV');
+          // If recruiter viewing candidate who has no CV record yet
+          if (!isOwnProfile) {
+            setError('Ứng viên này hiện chưa cập nhật hồ sơ trực tuyến trên hệ thống.');
+          } else {
+            setError(response.message || 'Không tìm thấy hồ sơ CV của bạn. Vui lòng tạo mới.');
+          }
         }
       } catch (err: any) {
         setError(err.message || 'Đã xảy ra lỗi khi tải hồ sơ');

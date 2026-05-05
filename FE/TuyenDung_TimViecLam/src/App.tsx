@@ -13,6 +13,9 @@ import AppliedJobsPage from './pages/AppliedJobsPage'
 import InterviewsPage from './pages/InterviewsPage'
 import RecruiterDashboardPage from './pages/RecruiterDashboardPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import CompanyListPage from './pages/CompanyListPage'
+import CompanyDetailPage from './pages/CompanyDetailPage'
+import SalaryCalculatorPage from './pages/SalaryCalculatorPage'
 
 import ProtectedRoute from './components/common/ProtectedRoute'
 
@@ -25,25 +28,27 @@ function App() {
         <Route path="/jobs/:id" element={<JobDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/recruiter-profile" element={<RecruiterProfilePage />} />
-        
+        <Route path="/companies" element={<CompanyListPage />} />
+        <Route path="/companies/:id" element={<CompanyDetailPage />} />
+
         {/* Protected Recruiter Route */}
-        <Route 
-          path="/recruiter/dashboard" 
+        <Route
+          path="/recruiter/dashboard"
           element={
             <ProtectedRoute allowedRoles={['RECRUITER']}>
               <RecruiterDashboardPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* Protected Admin Route */}
-        <Route 
-          path="/admin/dashboard" 
+        <Route
+          path="/admin/dashboard"
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <AdminDashboardPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
         <Route path="/settings" element={<SettingsPage />} />
@@ -52,6 +57,7 @@ function App() {
         <Route path="/saved-jobs" element={<SavedJobsPage />} />
         <Route path="/applied-jobs" element={<AppliedJobsPage />} />
         <Route path="/interviews" element={<InterviewsPage />} />
+        <Route path="/salary-calculator" element={<SalaryCalculatorPage />} />
         <Route path="/candidates/:id/cv/:cvId" element={<ProfilePage />} />
         <Route path="/candidates/:id" element={<ProfilePage />} />
       </Routes>
