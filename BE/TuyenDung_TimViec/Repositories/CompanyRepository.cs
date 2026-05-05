@@ -10,6 +10,7 @@ namespace TuyenDung_TimViec.Repositories
         Task<Company?> GetByIdAsync(Guid id);
         Task<Company?> GetByUserIdAsync(Guid userId);
         Task<bool> UpdateAsync(Company company);
+        Task<bool> ToggleVerifyAsync(Guid companyId);
     }
 
     public class CompanyRepository : ICompanyRepository
@@ -136,6 +137,21 @@ namespace TuyenDung_TimViec.Repositories
                     command.Parameters.AddWithValue("@Culture", (object)company.Culture ?? DBNull.Value);
                     command.Parameters.AddWithValue("@Benefits", (object)company.Benefits ?? DBNull.Value);
 
+                    await connection.OpenAsync();
+                    int result = await command.ExecuteNonQueryAsync();
+                    return result > 0;
+                }
+            }
+        }
+
+        public async Task<bool> ToggleVerifyAsync(Guid companyId)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "UPDATE Companies SET IsVerified = CASE WHEN IsVerified = 1 THEN 0 ELSE 1 END WHERE Id = @Id";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", companyId);
                     await connection.OpenAsync();
                     int result = await command.ExecuteNonQueryAsync();
                     return result > 0;

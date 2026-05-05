@@ -12,6 +12,9 @@ import JobDetailPage from './pages/JobDetailPage'
 import AppliedJobsPage from './pages/AppliedJobsPage'
 import InterviewsPage from './pages/InterviewsPage'
 import RecruiterDashboardPage from './pages/RecruiterDashboardPage'
+import AdminDashboardPage from './pages/AdminDashboardPage'
+
+import ProtectedRoute from './components/common/ProtectedRoute'
 
 function App() {
   return (
@@ -22,7 +25,27 @@ function App() {
         <Route path="/jobs/:id" element={<JobDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/recruiter-profile" element={<RecruiterProfilePage />} />
-        <Route path="/recruiter/dashboard" element={<RecruiterDashboardPage />} />
+        
+        {/* Protected Recruiter Route */}
+        <Route 
+          path="/recruiter/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={['RECRUITER']}>
+              <RecruiterDashboardPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Protected Admin Route */}
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          } 
+        />
+
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

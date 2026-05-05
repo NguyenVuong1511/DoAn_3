@@ -150,12 +150,12 @@ const Header = () => {
                   {showDropdown && (
                     <div className="absolute right-0 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
                       <Link
-                        to={(role === 'CANDIDATE' ? '/profile' : '/recruiter-profile')}
+                        to={(role === 'ADMIN' ? '/admin/dashboard' : role === 'CANDIDATE' ? '/profile' : '/recruiter-profile')}
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors font-bold"
                         onClick={() => setShowDropdown(false)}
                       >
                         <User size={16} />
-                        {role === 'CANDIDATE' ? 'Hồ sơ cá nhân' : 'Hồ sơ công ty'}
+                        {role === 'ADMIN' ? 'Trang quản trị viên' : role === 'CANDIDATE' ? 'Hồ sơ cá nhân' : 'Hồ sơ công ty'}
                       </Link>
                       <div className="h-px bg-gray-100 my-1"></div>
 
@@ -217,6 +217,21 @@ const Header = () => {
                           >
                             <Users size={16} />
                             Quản lý ứng viên
+                          </Link>
+                          <div className="h-px bg-gray-100 my-1"></div>
+                        </>
+                      )}
+
+                      {/* Menu cho Admin */}
+                      {role === 'ADMIN' && (
+                        <>
+                          <Link
+                            to="/admin/dashboard"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            onClick={() => setShowDropdown(false)}
+                          >
+                            <LayoutDashboard size={16} />
+                            Bảng điều khiển
                           </Link>
                           <div className="h-px bg-gray-100 my-1"></div>
                         </>
@@ -305,7 +320,7 @@ const Header = () => {
             {isLoggedIn ? (
               <>
                 <Link
-                  to={role === 'CANDIDATE' ? '/profile' : '/recruiter-profile'}
+                  to={role === 'ADMIN' ? '/admin/dashboard' : role === 'CANDIDATE' ? '/profile' : '/recruiter-profile'}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -318,7 +333,7 @@ const Header = () => {
                       <User size={18} />
                     </div>
                   )}
-                  {role === 'CANDIDATE' ? 'Trang cá nhân' : 'Hồ sơ công ty'}
+                  {role === 'ADMIN' ? 'Trang quản trị viên' : role === 'CANDIDATE' ? 'Trang cá nhân' : 'Hồ sơ công ty'}
                 </Link>
 
                 {role === 'CANDIDATE' && (
@@ -387,6 +402,21 @@ const Header = () => {
                         <Users size={18} />
                       </div>
                       Quản lý ứng viên
+                    </Link>
+                  </>
+                )}
+
+                {role === 'ADMIN' && (
+                  <>
+                    <Link
+                      to="/admin/dashboard"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                        <LayoutDashboard size={18} />
+                      </div>
+                      Bảng điều khiển
                     </Link>
                   </>
                 )}

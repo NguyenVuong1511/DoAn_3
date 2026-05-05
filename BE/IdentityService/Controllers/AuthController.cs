@@ -69,13 +69,15 @@ namespace IdentityService.Controllers
         public IActionResult Login([FromBody] LoginRequest request)
         {
             // 1. Kiểm tra DB bằng ADO.NET
-            bool isValid = _userRepo.ValidateUser(request.Email, request.Password, out string role, out Guid userId);
+            int loginStatus = _userRepo.ValidateUser(request.Email, request.Password, out string role, out Guid userId);
 
-            if (!isValid)
-                // Trả về lỗi dùng hàm Fail() của RepositoryResult
-                return Unauthorized(RepositoryResult<object>.Fail("Sai email, mật khẩu hoặc tài khoản bị khóa!"));
+            if (loginStatus == 0)
+                return Unauthorized(RepositoryResult<object>.Fail("Sai email hoặc mật khẩu!"));
+            
+            if (loginStatus == -1)
+                return Unauthorized(RepositoryResult<object>.Fail("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ."));
 
-            // 2. Nếu đúng, tạo Token JWT
+            // 2. Nếu đúng (loginStatus == 1), tạo Token JWT
             string tokenString = _tokenGen.GenerateToken(userId, request.Email, role);
 
             // 3. Gom dữ liệu lại thành một object

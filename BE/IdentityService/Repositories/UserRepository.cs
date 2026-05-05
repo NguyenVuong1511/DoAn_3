@@ -14,16 +14,16 @@ namespace IdentityService.Repositories
         }
 
         // 1. Hàm Đăng Nhập
-        public bool ValidateUser(string email, string password, out string role, out Guid userId)
+        // Trả về: 1 (Thành công), 0 (Sai email/mật khẩu), -1 (Tài khoản bị khóa)
+        public int ValidateUser(string email, string password, out string role, out Guid userId)
         {
-            bool isValid = false;
             role = "";
             userId = Guid.Empty;
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                // Chỉ cho phép user có Status là ACTIVE đăng nhập
-                string query = "SELECT Id, Role FROM Users WHERE Email = @email AND Password = @password AND Status = 'ACTIVE'";
+                // Kiểm tra email và mật khẩu trước
+                string query = "SELECT Id, Role, Status FROM Users WHERE Email = @email AND Password = @password";
 
                 SqlCommand cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@email", email);
@@ -34,13 +34,19 @@ namespace IdentityService.Repositories
                 {
                     if (reader.Read())
                     {
-                        isValid = true;
+                        string status = reader.GetString(2);
+                        if (status == "LOCKED")
+                        {
+                            return -1; // Tài khoản bị khóa
+                        }
+
                         userId = reader.GetGuid(0);
                         role = reader.GetString(1);
+                        return 1; // Thành công
                     }
                 }
             }
-            return isValid;
+            return 0; // Sai email hoặc mật khẩu
         }
 
         // 2. Hàm Đăng Ký Ứng Viên (Candidate)
@@ -334,6 +340,66 @@ namespace IdentityService.Repositories
                 }
             }
             return RepositoryResult<AccountInfoResponse>.Fail("Không tìm thấy người dùng.");
+        }
+
+        // 9. Lấy danh sách toàn bộ người dùng (Admin)
+        public RepositoryResult<List<object>> GetAllUsers()
+        {
+            var users = new List<object>();
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                string query = @"
+                    SELECT u.Id, u.Email, u.Role, u.Status, u.CreatedAt, 
+                           c.FullName, r.CompanyId, comp.Name as CompanyName,
+                           c.Avatar, comp.Logo as CompanyLogo
+                    FROM Users u
+                    LEFT JOIN Candidates c ON u.Id = c.UserId
+                    LEFT JOIN Recruiters r ON u.Id = r.UserId
+                    LEFT JOIN Companies comp ON r.CompanyId = comp.Id
+                    ORDER BY u.CreatedAt DESC";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            users.Add(new
+                            {
+                                id = reader.GetGuid(0),
+                                email = reader.GetString(1),
+                                role = reader.GetString(2),
+                                status = reader.GetString(3),
+                                createdAt = reader.GetDateTime(4),
+                                fullName = reader.IsDBNull(5) ? null : reader.GetString(5),
+                                companyId = reader.IsDBNull(6) ? null : (Guid?)reader.GetGuid(6),
+                                companyName = reader.IsDBNull(7) ? null : reader.GetString(7),
+                                avatar = reader.IsDBNull(8) ? null : reader.GetString(8),
+                                companyLogo = reader.IsDBNull(9) ? null : reader.GetString(9)
+                            });
+                        }
+                    }
+                }
+            }
+            return RepositoryResult<List<object>>.Ok(users, "Lấy danh sách người dùng thành công.");
+        }
+
+        // 10. Khóa/Mở khóa tài khoản (Admin)
+        public RepositoryResult<bool> ToggleUserStatus(Guid userId)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                string query = "UPDATE Users SET Status = CASE WHEN Status = 'ACTIVE' THEN 'LOCKED' ELSE 'ACTIVE' END WHERE Id = @id";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", userId);
+                    conn.Open();
+                    int rows = cmd.ExecuteNonQuery();
+                    if (rows > 0) return RepositoryResult<bool>.Ok(true, "Cập nhật trạng thái thành công.");
+                }
+            }
+            return RepositoryResult<bool>.Fail("Không tìm thấy người dùng.");
         }
     }
 }

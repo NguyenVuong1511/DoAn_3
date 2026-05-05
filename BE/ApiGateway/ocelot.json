@@ -200,6 +200,58 @@
         "Delete"
       ]
     },
+    // 10. Admin - Users (IdentityService)
+    {
+      "DownstreamPathTemplate": "/api/admin/users/{catchAll}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7201
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/admin/users/{catchAll}",
+      "UpstreamHttpMethod": [
+        "Get",
+        "Post",
+        "Put",
+        "Patch",
+        "Delete"
+      ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/admin/users",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7201
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/admin/users",
+      "UpstreamHttpMethod": [
+        "Get"
+      ]
+    },
+    // 11. Admin - General (JobService)
+    {
+      "DownstreamPathTemplate": "/api/admin/{catchAll}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7004
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/admin/{catchAll}",
+      "UpstreamHttpMethod": [
+        "Get",
+        "Post",
+        "Put",
+        "Patch",
+        "Delete"
+      ]
+    },
     // 5.JobService 
     {
       "DownstreamPathTemplate": "/{catchAll}",

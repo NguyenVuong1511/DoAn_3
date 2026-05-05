@@ -24,6 +24,7 @@ namespace TuyenDung_TimViec.Repositories
         Task<bool> UpdateJobPostAsync(JobPost jobPost);
         Task<bool> DeleteJobPostAsync(Guid id);
         Task<bool> ToggleJobPostStatusAsync(Guid id);
+        Task<object> GetStatsAsync();
     }
 
     public class JobPostRepository : IJobPostRepository
@@ -33,6 +34,38 @@ namespace TuyenDung_TimViec.Repositories
         public JobPostRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
+        }
+
+        public async Task<object> GetStatsAsync()
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = @"
+                    SELECT 
+                        (SELECT COUNT(*) FROM JobPosts) as TotalJobs,
+                        (SELECT COUNT(*) FROM JobPosts WHERE Status = 'Pending') as PendingJobs,
+                        (SELECT COUNT(*) FROM Companies) as TotalCompanies,
+                        (SELECT COUNT(*) FROM Companies WHERE IsVerified = 1) as VerifiedCompanies";
+
+                await connection.OpenAsync();
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return new
+                            {
+                                totalJobs = reader.GetInt32(0),
+                                pendingJobs = reader.GetInt32(1),
+                                totalCompanies = reader.GetInt32(2),
+                                verifiedCompanies = reader.GetInt32(3)
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         public async Task<List<JobPost>> GetTopJobPostsAsync(int count)

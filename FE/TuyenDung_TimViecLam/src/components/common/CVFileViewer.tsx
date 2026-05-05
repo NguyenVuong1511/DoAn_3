@@ -28,7 +28,7 @@ const CVFileViewer: React.FC<CVFileViewerProps> = ({ isOpen, onClose, fileUrl, f
     : (fileUrl.startsWith('http') ? fileUrl : `/cvs/${fileUrl}`);
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 md:p-8 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-200 flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 md:p-8 animate-in fade-in duration-300">
       <div className="bg-white w-full max-w-6xl h-full rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
 
         {/* Header */}
