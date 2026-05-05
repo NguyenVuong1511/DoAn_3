@@ -9,7 +9,7 @@ import {
   type AdminUser,
   type AdminCompany
 } from '../services/adminService';
-import { Layout, Menu, Avatar, Dropdown, Space, ConfigProvider, Breadcrumb, Button, message } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Space, ConfigProvider, Breadcrumb, Button, message, App } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   DashboardOutlined,
@@ -163,91 +163,93 @@ const AdminDashboardPage = () => {
         }
       }}
     >
-      <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
-        <Sider
-          trigger={null}
-          collapsible
-          collapsed={collapsed}
-          theme="dark"
-          width={260}
-          style={{ position: 'sticky', top: 0, left: 0, height: '100vh', overflow: 'auto', boxShadow: '4px 0 24px rgba(0,0,0,0.05)' }}
-        >
-          <div style={{ height: 64, margin: '16px 24px', display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
-            <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', flexShrink: 0 }}>
-              A
-            </div>
-            {!collapsed && <span style={{ color: '#fff', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.5px' }}>ADMIN PANEL</span>}
-          </div>
-          <Menu
+      <App>
+        <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
+          <Sider
+            trigger={null}
+            collapsible
+            collapsed={collapsed}
             theme="dark"
-            mode="inline"
-            selectedKeys={[activeTab]}
-            items={menuItems}
-            onClick={(e) => setActiveTab(e.key)}
-            style={{ padding: '0 8px' }}
-          />
-        </Sider>
-
-        <Layout>
-          <Header style={{ padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.03)', position: 'sticky', top: 0, zIndex: 10, width: '100%' }}>
-            <Space size={16}>
-              <Button
-                type="text"
-                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={() => setCollapsed(!collapsed)}
-                style={{ fontSize: '16px', width: 40, height: 40 }}
-              />
-              <Breadcrumb items={getBreadcrumbItems()} />
-            </Space>
-
-            <Space size={24}>
-              <Button type="text" icon={<BellOutlined />} style={{ fontSize: '18px', color: '#64748b' }} />
-              <Dropdown menu={userMenuProps} placement="bottomRight" arrow>
-                <Space style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: 8, transition: 'all 0.2s' }} className="hover:bg-slate-50">
-                  <Avatar src="/images/avatar/admin.png" style={{ border: '2px solid #e2e8f0' }} />
-                  {!collapsed && (
-                    <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
-                      <span style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>Quản trị viên</span>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>Super Admin</span>
-                    </div>
-                  )}
-                </Space>
-              </Dropdown>
-            </Space>
-          </Header>
-
-          <Content style={{ margin: '24px 24px', minHeight: 280 }}>
-            <div style={{ padding: 24, background: '#fff', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03)' }}>
-              {activeTab === 'overview' && (
-                <AdminOverviewSection
-                  stats={displayStats}
-                  loading={loading}
-                  onSwitchTab={setActiveTab}
-                  jobs={jobs}
-                  users={users}
-                  companies={companies}
-                />
-              )}
-              {activeTab === 'jobs' && <AdminManageJobsSection jobs={jobs} loading={loading} refreshData={fetchDashboardData} />}
-              {activeTab === 'companies' && <AdminManageCompaniesSection companies={companies} loading={loading} refreshData={fetchDashboardData} />}
-              {activeTab === 'users' && <AdminManageUsersSection users={users} loading={loading} refreshData={fetchDashboardData} />}
-              {activeTab === 'categories' && <AdminManageCategoriesSection />}
-              {activeTab === 'locations' && <AdminManageLocationsSection />}
-              {activeTab === 'settings' && (
-                <div style={{ padding: '80px 0', textAlign: 'center' }}>
-                  <SettingOutlined style={{ fontSize: '64px', color: '#e2e8f0', marginBottom: '24px' }} />
-                  <h2 style={{ color: '#64748b', fontWeight: 700 }}>Cài đặt hệ thống</h2>
-                  <p style={{ color: '#94a3b8' }}>Tính năng này đang được phát triển. Vui lòng quay lại sau!</p>
-                </div>
-              )}
+            width={260}
+            style={{ position: 'sticky', top: 0, left: 0, height: '100vh', overflow: 'auto', boxShadow: '4px 0 24px rgba(0,0,0,0.05)' }}
+          >
+            <div style={{ height: 64, margin: '16px 24px', display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+              <div style={{ width: 32, height: 32, background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', flexShrink: 0 }}>
+                A
+              </div>
+              {!collapsed && <span style={{ color: '#fff', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.5px' }}>ADMIN PANEL</span>}
             </div>
-          </Content>
+            <Menu
+              theme="dark"
+              mode="inline"
+              selectedKeys={[activeTab]}
+              items={menuItems}
+              onClick={(e) => setActiveTab(e.key)}
+              style={{ padding: '0 8px' }}
+            />
+          </Sider>
 
-          <div style={{ textAlign: 'center', padding: '16px 0', color: '#94a3b8', fontSize: '12px' }}>
-            JobPortal Admin &copy;2026 - Modern Dashboard v2.0
-          </div>
+          <Layout>
+            <Header style={{ padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.03)', position: 'sticky', top: 0, zIndex: 10, width: '100%' }}>
+              <Space size={16}>
+                <Button
+                  type="text"
+                  icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                  onClick={() => setCollapsed(!collapsed)}
+                  style={{ fontSize: '16px', width: 40, height: 40 }}
+                />
+                <Breadcrumb items={getBreadcrumbItems()} />
+              </Space>
+
+              <Space size={24}>
+                <Button type="text" icon={<BellOutlined />} style={{ fontSize: '18px', color: '#64748b' }} />
+                <Dropdown menu={userMenuProps} placement="bottomRight" arrow>
+                  <Space style={{ cursor: 'pointer', padding: '4px 8px', borderRadius: 8, transition: 'all 0.2s' }} className="hover:bg-slate-50">
+                    <Avatar src="/images/avatar/admin.png" style={{ border: '2px solid #e2e8f0' }} />
+                    {!collapsed && (
+                      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+                        <span style={{ fontWeight: 700, fontSize: '14px', color: '#1e293b' }}>Quản trị viên</span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>Super Admin</span>
+                      </div>
+                    )}
+                  </Space>
+                </Dropdown>
+              </Space>
+            </Header>
+
+            <Content style={{ margin: '24px 24px', minHeight: 280 }}>
+              <div style={{ padding: 24, background: '#fff', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03)' }}>
+                {activeTab === 'overview' && (
+                  <AdminOverviewSection
+                    stats={displayStats}
+                    loading={loading}
+                    onSwitchTab={setActiveTab}
+                    jobs={jobs}
+                    users={users}
+                    companies={companies}
+                  />
+                )}
+                {activeTab === 'jobs' && <AdminManageJobsSection jobs={jobs} loading={loading} refreshData={fetchDashboardData} />}
+                {activeTab === 'companies' && <AdminManageCompaniesSection companies={companies} loading={loading} refreshData={fetchDashboardData} />}
+                {activeTab === 'users' && <AdminManageUsersSection users={users} loading={loading} refreshData={fetchDashboardData} />}
+                {activeTab === 'categories' && <AdminManageCategoriesSection />}
+                {activeTab === 'locations' && <AdminManageLocationsSection />}
+                {activeTab === 'settings' && (
+                  <div style={{ padding: '80px 0', textAlign: 'center' }}>
+                    <SettingOutlined style={{ fontSize: '64px', color: '#e2e8f0', marginBottom: '24px' }} />
+                    <h2 style={{ color: '#64748b', fontWeight: 700 }}>Cài đặt hệ thống</h2>
+                    <p style={{ color: '#94a3b8' }}>Tính năng này đang được phát triển. Vui lòng quay lại sau!</p>
+                  </div>
+                )}
+              </div>
+            </Content>
+
+            <div style={{ textAlign: 'center', padding: '16px 0', color: '#94a3b8', fontSize: '12px' }}>
+              JobPortal Admin &copy;2026 - Modern Dashboard v2.0
+            </div>
+          </Layout>
         </Layout>
-      </Layout>
+      </App>
     </ConfigProvider>
   );
 };

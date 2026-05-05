@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Tag, Button, Input, Select, Space, Popconfirm, message, Typography, Tooltip } from 'antd';
+import { Table, Tag, Button, Input, Select, Space, App, Typography, Tooltip } from 'antd';
 import { 
   SearchOutlined, 
   FilterOutlined, 
@@ -23,6 +23,7 @@ interface AdminManageJobsSectionProps {
 }
 
 const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, loading, refreshData }) => {
+  const { message, modal } = App.useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
@@ -144,79 +145,87 @@ const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, l
             
             {isPending && (
               <Space>
-                <Popconfirm
-                  title="Xác nhận duyệt bài đăng này?"
-                  onConfirm={() => handleToggleStatus(record.id, 'approve')}
-                  okText="Duyệt"
-                  cancelText="Hủy"
-                >
-                  <Button 
+                <Button 
                     type="primary" 
                     size="small" 
                     icon={<CheckCircleOutlined />}
                     loading={isUpdating === record.id}
                     style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600, background: '#10b981', borderColor: '#10b981' }}
-                  >
-                    Duyệt
-                  </Button>
-                </Popconfirm>
-                <Popconfirm
-                  title="Từ chối bài đăng này?"
-                  onConfirm={() => handleToggleStatus(record.id, 'reject')}
-                  okText="Từ chối"
-                  cancelText="Hủy"
-                  okButtonProps={{ danger: true }}
+                    onClick={() => {
+                        modal.confirm({
+                            title: 'Duyệt bài đăng',
+                            content: 'Bạn có chắc chắn muốn duyệt bài đăng tuyển dụng này?',
+                            okText: 'Duyệt bài',
+                            cancelText: 'Hủy',
+                            onOk: () => handleToggleStatus(record.id, 'approve')
+                        });
+                    }}
                 >
-                  <Button 
+                    Duyệt
+                </Button>
+                <Button 
                     danger
                     size="small" 
                     icon={<StopOutlined />}
                     loading={isUpdating === record.id}
                     style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
-                  >
+                    onClick={() => {
+                        modal.confirm({
+                            title: 'Từ chối bài đăng',
+                            content: 'Bạn có chắc chắn muốn từ chối bài đăng tuyển dụng này?',
+                            okText: 'Từ chối',
+                            cancelText: 'Hủy',
+                            okButtonProps: { danger: true },
+                            onOk: () => handleToggleStatus(record.id, 'reject')
+                        });
+                    }}
+                >
                     Từ chối
-                  </Button>
-                </Popconfirm>
+                </Button>
               </Space>
             )}
 
             {(isActive || isInactive) && (
-              <Popconfirm
-                title="Khóa bài đăng này?"
-                onConfirm={() => handleToggleStatus(record.id, 'reject')}
-                okText="Khóa"
-                cancelText="Hủy"
-                okButtonProps={{ danger: true }}
-              >
                 <Button 
                   danger 
                   size="small" 
                   icon={<StopOutlined />}
                   loading={isUpdating === record.id}
                   style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
+                  onClick={() => {
+                      modal.confirm({
+                          title: 'Khóa bài đăng',
+                          content: 'Bạn có chắc chắn muốn khóa bài đăng này?',
+                          okText: 'Khóa ngay',
+                          cancelText: 'Hủy',
+                          okButtonProps: { danger: true },
+                          onOk: () => handleToggleStatus(record.id, 'reject')
+                      });
+                  }}
                 >
                   Khóa
                 </Button>
-              </Popconfirm>
             )}
 
             {isRejected && (
-              <Popconfirm
-                title="Duyệt lại bài đăng này?"
-                onConfirm={() => handleToggleStatus(record.id, 'approve')}
-                okText="Duyệt lại"
-                cancelText="Hủy"
-              >
                 <Button 
                   type="primary" 
                   size="small" 
                   icon={<CheckCircleOutlined />}
                   loading={isUpdating === record.id}
                   style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
+                  onClick={() => {
+                      modal.confirm({
+                          title: 'Duyệt lại bài đăng',
+                          content: 'Bạn có chắc chắn muốn duyệt lại bài đăng này?',
+                          okText: 'Duyệt lại',
+                          cancelText: 'Hủy',
+                          onOk: () => handleToggleStatus(record.id, 'approve')
+                      });
+                  }}
                 >
                   Duyệt lại
                 </Button>
-              </Popconfirm>
             )}
           </Space>
         );

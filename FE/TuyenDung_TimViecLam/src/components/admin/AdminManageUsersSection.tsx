@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Input, Tag, Select, Space, Button, Popconfirm, message, Avatar, Typography } from 'antd';
+import { Table, Input, Tag, Select, Space, Button, App, Avatar, Typography } from 'antd';
 import {
   SearchOutlined,
   FilterOutlined,
@@ -24,6 +24,7 @@ interface AdminManageUsersSectionProps {
 }
 
 const AdminManageUsersSection: React.FC<AdminManageUsersSectionProps> = ({ users, loading, refreshData }) => {
+  const { message, modal } = App.useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
@@ -135,35 +136,46 @@ const AdminManageUsersSection: React.FC<AdminManageUsersSectionProps> = ({ users
         if (record.role === 'ADMIN') return null;
         return (
           <Space>
-            <Popconfirm
-              title={`Bạn có chắc muốn ${record.status === 'ACTIVE' ? 'khóa' : 'mở khóa'} người dùng này?`}
-              onConfirm={() => handleToggleStatus(record.id)}
-              okText="Xác nhận"
-              cancelText="Hủy"
-              okButtonProps={{ danger: record.status === 'ACTIVE' }}
-            >
-              {record.status === 'ACTIVE' ? (
+            {record.status === 'ACTIVE' ? (
                 <Button
-                  danger
-                  size="small"
-                  icon={<LockOutlined />}
-                  loading={isUpdating === record.id}
-                  style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
+                    danger
+                    size="small"
+                    icon={<LockOutlined />}
+                    loading={isUpdating === record.id}
+                    style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
+                    onClick={() => {
+                        modal.confirm({
+                            title: 'Khóa người dùng',
+                            content: `Bạn có chắc muốn khóa người dùng ${record.fullName || record.email}?`,
+                            okText: 'Xác nhận khóa',
+                            cancelText: 'Hủy',
+                            okButtonProps: { danger: true },
+                            onOk: () => handleToggleStatus(record.id)
+                        });
+                    }}
                 >
-                  Khóa
+                    Khóa
                 </Button>
-              ) : (
+            ) : (
                 <Button
-                  type="primary"
-                  size="small"
-                  icon={<UnlockOutlined />}
-                  loading={isUpdating === record.id}
-                  style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
+                    type="primary"
+                    size="small"
+                    icon={<UnlockOutlined />}
+                    loading={isUpdating === record.id}
+                    style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
+                    onClick={() => {
+                        modal.confirm({
+                            title: 'Mở khóa người dùng',
+                            content: `Bạn có chắc muốn mở khóa người dùng ${record.fullName || record.email}?`,
+                            okText: 'Mở khóa',
+                            cancelText: 'Hủy',
+                            onOk: () => handleToggleStatus(record.id)
+                        });
+                    }}
                 >
-                  Mở khóa
+                    Mở khóa
                 </Button>
-              )}
-            </Popconfirm>
+            )}
             <Button type="text" icon={<MoreOutlined />} shape="circle" />
           </Space>
         );

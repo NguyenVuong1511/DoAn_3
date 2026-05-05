@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import { verifyCompanyAdmin, type AdminCompany } from '../../services/adminService';
 import type { ColumnsType } from 'antd/es/table';
-import { message, Popconfirm } from 'antd';
+import { message, App } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -22,6 +22,7 @@ interface AdminManageCompaniesSectionProps {
 }
 
 const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = ({ companies, loading, refreshData }) => {
+  const { message, modal } = App.useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
   const [previewCompany, setPreviewCompany] = useState<AdminCompany | null>(null);
@@ -126,21 +127,23 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
             />
           </Tooltip>
           {!record.isVerified && (
-            <Popconfirm
-              title="Xác minh công ty này?"
-              onConfirm={() => handleVerify(record.id)}
-              okText="Xác minh"
-              cancelText="Hủy"
-            >
-              <Button
+            <Button
                 type="primary"
                 size="small"
                 loading={isUpdating === record.id}
                 style={{ fontSize: '12px', borderRadius: '6px' }}
-              >
+                onClick={() => {
+                    modal.confirm({
+                        title: 'Xác minh công ty',
+                        content: 'Bạn có chắc chắn muốn xác minh công ty này?',
+                        okText: 'Xác minh',
+                        cancelText: 'Hủy',
+                        onOk: () => handleVerify(record.id)
+                    });
+                }}
+            >
                 Xác minh
-              </Button>
-            </Popconfirm>
+            </Button>
           )}
         </Space>
       ),
@@ -203,7 +206,7 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
         ]}
         width={700}
         centered
-        bodyStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 } }}
       >
         {previewCompany && (
           <div style={{ overflow: 'hidden', borderRadius: '12px' }}>

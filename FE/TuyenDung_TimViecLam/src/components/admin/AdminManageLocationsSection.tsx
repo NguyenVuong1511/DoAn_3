@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, Space, message, Popconfirm, Card } from 'antd';
+import { Table, Button, Modal, Form, Input, Space, Card, App } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { getAllLocationsAdmin, addLocationAdmin, updateLocationAdmin, deleteLocationAdmin } from '../../services/adminService';
 
 const AdminManageLocationsSection = () => {
+    const { message, modal } = App.useApp();
     const [locations, setLocations] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -102,21 +103,27 @@ const AdminManageLocationsSection = () => {
                         icon={<EditOutlined className="text-blue-500" />} 
                         onClick={() => showModal(record)}
                     />
-                    <Popconfirm
-                        title="Bạn có chắc chắn muốn xóa địa điểm này?"
-                        onConfirm={() => handleDelete(record.id)}
-                        okText="Có"
-                        cancelText="Không"
-                    >
-                        <Button type="text" icon={<DeleteOutlined className="text-red-500" />} />
-                    </Popconfirm>
+                    <Button 
+                        type="text" 
+                        icon={<DeleteOutlined className="text-red-500" />} 
+                        onClick={() => {
+                            modal.confirm({
+                                title: 'Xác nhận xóa',
+                                content: 'Bạn có chắc chắn muốn xóa địa điểm này?',
+                                okText: 'Có',
+                                cancelText: 'Không',
+                                okButtonProps: { danger: true },
+                                onOk: () => handleDelete(record.id)
+                            });
+                        }}
+                    />
                 </Space>
             ),
         },
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
                 <div>
                     <h2 className="text-2xl font-black text-gray-900">Quản lý địa điểm</h2>
@@ -150,6 +157,7 @@ const AdminManageLocationsSection = () => {
                 okText="Xác nhận"
                 cancelText="Hủy bỏ"
                 centered
+                destroyOnHidden
             >
                 <Form
                     form={form}
