@@ -232,26 +232,26 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
               <p className="text-gray-400 font-bold">Đang tải biểu mẫu...</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-12">
+            <form id="post-job-form" onSubmit={handleSubmit} className="space-y-12">
 
               {/* Grid 1: Basic Info */}
               <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <FormGroup label="Tiêu đề tin tuyển dụng" icon={<Briefcase size={16} />}>
+                <FormGroup label="Tiêu đề tin tuyển dụng" icon={<Briefcase size={16} />} isRequired>
                   <input type="text" name="title" value={formData.title} onChange={handleChange} required placeholder="Ví dụ: Senior React Developer" className="form-input" />
                 </FormGroup>
-                <FormGroup label="Danh mục" icon={<Target size={16} />}>
+                <FormGroup label="Danh mục" icon={<Target size={16} />} isRequired>
                   <select name="categoryId" value={formData.categoryId} onChange={handleChange} required className="form-input">
                     <option value="">Chọn danh mục</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </FormGroup>
-                <FormGroup label="Địa điểm" icon={<MapPin size={16} />}>
+                <FormGroup label="Địa điểm" icon={<MapPin size={16} />} isRequired>
                   <select name="locationId" value={formData.locationId} onChange={handleChange} required className="form-input">
                     <option value="">Chọn địa điểm</option>
                     {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                   </select>
                 </FormGroup>
-                <FormGroup label="Hình thức" icon={<Clock size={16} />}>
+                <FormGroup label="Hình thức" icon={<Clock size={16} />} isRequired>
                   <select name="jobTypeId" value={formData.jobTypeId} onChange={handleChange} required className="form-input">
                     <option value="">Chọn hình thức</option>
                     {jobTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -261,13 +261,13 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
 
               {/* Grid 2: Levels & Salary */}
               <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <FormGroup label="Cấp bậc">
+                <FormGroup label="Cấp bậc" isRequired>
                   <select name="levelId" value={formData.levelId} onChange={handleChange} required className="form-input">
                     <option value="">Chọn cấp bậc</option>
                     {levels.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                   </select>
                 </FormGroup>
-                <FormGroup label="Kinh nghiệm">
+                <FormGroup label="Kinh nghiệm" isRequired>
                   <select name="experienceId" value={formData.experienceId} onChange={handleChange} required className="form-input">
                     <option value="">Chọn kinh nghiệm</option>
                     {experiences.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
@@ -281,15 +281,15 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
                     <input type="number" name="maxSalary" value={formData.maxSalary} onChange={handleChange} className="form-input px-4" />
                   </FormGroup>
                 </div>
-                <FormGroup label="Hạn nộp hồ sơ" icon={<Calendar size={16} />}>
+                <FormGroup label="Hạn nộp hồ sơ" icon={<Calendar size={16} />} isRequired>
                   <input type="date" name="deadline" value={formData.deadline} onChange={handleChange} required className="form-input" />
                 </FormGroup>
               </section>
 
               {/* Textareas */}
               <section className="space-y-8">
-                <FormGroup label="Mô tả công việc" icon={<FileText size={16} />}>
-                  <textarea name="description" value={formData.description} onChange={handleChange} rows={4} className="form-input h-auto py-4" placeholder="Mô tả chi tiết công việc..." />
+                <FormGroup label="Mô tả công việc" icon={<FileText size={16} />} isRequired>
+                  <textarea name="description" value={formData.description} onChange={handleChange} required rows={4} className="form-input h-auto py-4" placeholder="Mô tả chi tiết công việc..." />
                 </FormGroup>
                 <FormGroup label="Yêu cầu ứng viên">
                   <textarea name="requirement" value={formData.requirement} onChange={handleChange} rows={4} className="form-input h-auto py-4" placeholder="Kỹ năng, kinh nghiệm cần có..." />
@@ -312,7 +312,8 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
             Hủy bỏ
           </button>
           <button
-            onClick={handleSubmit}
+            type="submit"
+            form="post-job-form"
             disabled={submitting || loading}
             className="flex-1 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl shadow-indigo-600/20 transition-all disabled:opacity-50 cursor-pointer"
           >
@@ -346,11 +347,12 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
   );
 };
 
-const FormGroup = ({ label, icon, children }: any) => (
+const FormGroup = ({ label, icon, isRequired, children }: any) => (
   <div className="flex flex-col gap-2">
     <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1 flex items-center gap-2">
       {icon}
       {label}
+      {isRequired && <span className="text-rose-500 font-bold">*</span>}
     </label>
     {children}
   </div>
