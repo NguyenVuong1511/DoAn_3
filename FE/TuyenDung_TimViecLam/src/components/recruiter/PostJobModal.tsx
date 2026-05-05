@@ -56,7 +56,7 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
     description: '',
     requirement: '',
     benefit: '',
-    status: 'Active'
+    status: 'Pending'
   });
 
   useEffect(() => {
@@ -102,7 +102,7 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
         description: '',
         requirement: '',
         benefit: '',
-        status: 'Active'
+        status: 'Pending'
       });
     }
   }, [isOpen, jobToEdit]);
@@ -154,12 +154,29 @@ const PostJobModal = ({ isOpen, onClose, userId, companyId, onSuccess, jobToEdit
     try {
       setSubmitting(true);
       const payload = {
-        ...(jobToEdit || {}),
-        ...formData,
-        companyId,
+        title: formData.title,
+        categoryId: formData.categoryId,
+        locationId: formData.locationId,
+        jobTypeId: formData.jobTypeId,
+        levelId: formData.levelId,
+        experienceId: formData.experienceId,
+        minSalary: Number(formData.minSalary),
+        maxSalary: Number(formData.maxSalary),
+        quantity: Number(formData.quantity),
+        deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
+        description: formData.description,
+        requirement: formData.requirement,
+        benefit: formData.benefit,
+        status: formData.status,
+        companyId: companyId,
         recruiterId: userId,
-        postDate: jobToEdit ? (jobToEdit.postDate || jobToEdit.PostDate || new Date().toISOString()) : new Date().toISOString()
+        postDate: new Date().toISOString()
       };
+
+      if (jobToEdit) {
+        (payload as any).id = jobToEdit.id;
+        (payload as any).postDate = jobToEdit.postDate || jobToEdit.PostDate || payload.postDate;
+      }
 
       const res = jobToEdit
         ? await updateJobApi(jobToEdit.id, payload)

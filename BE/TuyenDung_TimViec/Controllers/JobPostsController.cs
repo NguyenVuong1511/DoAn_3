@@ -112,6 +112,7 @@ namespace TuyenDung_TimViec.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] JobPost jobPost)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
                 bool result = await _jobPostRepository.CreateJobPostAsync(jobPost);
@@ -127,6 +128,7 @@ namespace TuyenDung_TimViec.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] JobPost jobPost)
         {
+            if (!ModelState.IsValid) return BadRequest(RepositoryResult<object>.Fail("Dữ liệu không hợp lệ."));
             try
             {
                 jobPost.Id = id;

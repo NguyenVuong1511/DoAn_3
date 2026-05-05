@@ -320,10 +320,38 @@ namespace TuyenDung_TimViec.Repositories
             };
         }
 
+        private async Task<Guid> GetRecruiterIdByUserIdAsync(Guid userId, SqlConnection connection)
+        {
+            string query = "SELECT Id FROM Recruiters WHERE UserId = @UserId";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@UserId", userId);
+                var result = await command.ExecuteScalarAsync();
+                return result != null ? (Guid)result : Guid.Empty;
+            }
+        }
+
         public async Task<bool> CreateJobPostAsync(JobPost jobPost)
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
+                await connection.OpenAsync();
+
+                // Resolve RecruiterId from UserId if needed
+                Guid finalRecruiterId = jobPost.RecruiterId ?? Guid.Empty;
+                string checkRecruiterQuery = "SELECT COUNT(1) FROM Recruiters WHERE Id = @Id";
+                using (SqlCommand checkCmd = new SqlCommand(checkRecruiterQuery, connection))
+                {
+                    checkCmd.Parameters.AddWithValue("@Id", finalRecruiterId);
+                    int exists = (int)await checkCmd.ExecuteScalarAsync();
+                    if (exists == 0 && jobPost.RecruiterId.HasValue)
+                    {
+                        finalRecruiterId = await GetRecruiterIdByUserIdAsync(jobPost.RecruiterId.Value, connection);
+                    }
+                }
+
+                if (finalRecruiterId == Guid.Empty) return false;
+
                 string query = @"
                     INSERT INTO JobPosts (Id, RecruiterId, CompanyId, CategoryId, LocationId, JobTypeId, LevelId, ExperienceId, Title, Description, Requirement, Benefit, MinSalary, MaxSalary, Quantity, PostDate, Deadline, Status)
                     VALUES (@Id, @RecruiterId, @CompanyId, @CategoryId, @LocationId, @JobTypeId, @LevelId, @ExperienceId, @Title, @Description, @Requirement, @Benefit, @MinSalary, @MaxSalary, @Quantity, @PostDate, @Deadline, @Status)";
@@ -331,25 +359,24 @@ namespace TuyenDung_TimViec.Repositories
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@Id", Guid.NewGuid());
-                    command.Parameters.AddWithValue("@RecruiterId", jobPost.RecruiterId);
-                    command.Parameters.AddWithValue("@CompanyId", jobPost.CompanyId);
-                    command.Parameters.AddWithValue("@CategoryId", jobPost.CategoryId);
-                    command.Parameters.AddWithValue("@LocationId", jobPost.LocationId);
-                    command.Parameters.AddWithValue("@JobTypeId", jobPost.JobTypeId);
-                    command.Parameters.AddWithValue("@LevelId", jobPost.LevelId);
-                    command.Parameters.AddWithValue("@ExperienceId", jobPost.ExperienceId);
-                    command.Parameters.AddWithValue("@Title", jobPost.Title);
-                    command.Parameters.AddWithValue("@Description", jobPost.Description);
-                    command.Parameters.AddWithValue("@Requirement", jobPost.Requirement);
-                    command.Parameters.AddWithValue("@Benefit", jobPost.Benefit);
+                    command.Parameters.AddWithValue("@RecruiterId", finalRecruiterId);
+                    command.Parameters.AddWithValue("@CompanyId", (object)jobPost.CompanyId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@CategoryId", (object)jobPost.CategoryId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@LocationId", (object)jobPost.LocationId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@JobTypeId", (object)jobPost.JobTypeId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@LevelId", (object)jobPost.LevelId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@ExperienceId", (object)jobPost.ExperienceId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Title", (object)jobPost.Title ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Description", (object)jobPost.Description ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Requirement", (object)jobPost.Requirement ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Benefit", (object)jobPost.Benefit ?? DBNull.Value);
                     command.Parameters.AddWithValue("@MinSalary", jobPost.MinSalary);
                     command.Parameters.AddWithValue("@MaxSalary", jobPost.MaxSalary);
                     command.Parameters.AddWithValue("@Quantity", jobPost.Quantity);
                     command.Parameters.AddWithValue("@PostDate", DateTime.Now);
-                    command.Parameters.AddWithValue("@Deadline", jobPost.Deadline);
-                    command.Parameters.AddWithValue("@Status", "Active");
+                    command.Parameters.AddWithValue("@Deadline", (object)jobPost.Deadline ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Status", "Pending");
 
-                    await connection.OpenAsync();
                     int result = await command.ExecuteNonQueryAsync();
                     return result > 0;
                 }
@@ -370,15 +397,15 @@ namespace TuyenDung_TimViec.Repositories
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@Id", jobPost.Id);
-                    command.Parameters.AddWithValue("@CategoryId", jobPost.CategoryId);
-                    command.Parameters.AddWithValue("@LocationId", jobPost.LocationId);
-                    command.Parameters.AddWithValue("@JobTypeId", jobPost.JobTypeId);
-                    command.Parameters.AddWithValue("@LevelId", jobPost.LevelId);
-                    command.Parameters.AddWithValue("@ExperienceId", jobPost.ExperienceId);
-                    command.Parameters.AddWithValue("@Title", jobPost.Title);
-                    command.Parameters.AddWithValue("@Description", jobPost.Description);
-                    command.Parameters.AddWithValue("@Requirement", jobPost.Requirement);
-                    command.Parameters.AddWithValue("@Benefit", jobPost.Benefit);
+                    command.Parameters.AddWithValue("@CategoryId", (object)jobPost.CategoryId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@LocationId", (object)jobPost.LocationId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@JobTypeId", (object)jobPost.JobTypeId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@LevelId", (object)jobPost.LevelId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@ExperienceId", (object)jobPost.ExperienceId ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Title", (object)jobPost.Title ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Description", (object)jobPost.Description ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Requirement", (object)jobPost.Requirement ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Benefit", (object)jobPost.Benefit ?? DBNull.Value);
                     command.Parameters.AddWithValue("@MinSalary", jobPost.MinSalary);
                     command.Parameters.AddWithValue("@MaxSalary", jobPost.MaxSalary);
                     command.Parameters.AddWithValue("@Quantity", jobPost.Quantity);
