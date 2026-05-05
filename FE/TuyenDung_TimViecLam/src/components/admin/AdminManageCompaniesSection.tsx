@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { Table, Input, Tag, Avatar, Space, Typography, Button, Tooltip } from 'antd';
+import { Table, Input, Tag, Avatar, Space, Typography, Button, Tooltip, Modal, Descriptions, Divider } from 'antd';
 import {
   SearchOutlined,
   GlobalOutlined,
   EnvironmentOutlined,
   EyeOutlined,
-  VerifiedOutlined
+  VerifiedOutlined,
+  InfoCircleOutlined,
+  LinkOutlined
 } from '@ant-design/icons';
 import { verifyCompanyAdmin, type AdminCompany } from '../../services/adminService';
 import type { ColumnsType } from 'antd/es/table';
 import { message, Popconfirm } from 'antd';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 interface AdminManageCompaniesSectionProps {
   companies: AdminCompany[];
@@ -22,6 +24,7 @@ interface AdminManageCompaniesSectionProps {
 const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = ({ companies, loading, refreshData }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
+  const [previewCompany, setPreviewCompany] = useState<AdminCompany | null>(null);
 
   const handleVerify = async (companyId: string) => {
     try {
@@ -64,7 +67,7 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
           </Avatar>
           <Space orientation="vertical" size={0}>
             <Text strong style={{ fontSize: '15px', color: '#1e293b' }}>{text}</Text>
-            {record.isVerified && <Tag color="success" style={{ fontSize: '10px', borderRadius: '4px', margin: 0 }}>VĂN PHÒNG CHÍNH</Tag>}
+            {record.isVerified && <Tag color="success" style={{ fontSize: '10px', borderRadius: '4px', margin: 0 }}>ĐÃ XÁC MINH</Tag>}
           </Space>
         </Space>
       ),
@@ -115,7 +118,12 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
       render: (_, record) => (
         <Space>
           <Tooltip title="Xem hồ sơ công ty">
-            <Button size="small" icon={<EyeOutlined />} shape="circle" />
+            <Button 
+              size="small" 
+              icon={<EyeOutlined />} 
+              shape="circle" 
+              onClick={() => setPreviewCompany(record)}
+            />
           </Tooltip>
           {!record.isVerified && (
             <Popconfirm
@@ -172,6 +180,85 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
         scroll={{ x: 800 }}
         style={{ borderRadius: '12px', overflow: 'hidden' }}
       />
+
+      {/* Profile Preview Modal */}
+      <Modal
+        title={null}
+        open={!!previewCompany}
+        onCancel={() => setPreviewCompany(null)}
+        footer={[
+          <Button key="close" onClick={() => setPreviewCompany(null)} style={{ borderRadius: '8px' }}>
+            Đóng
+          </Button>,
+          !previewCompany?.isVerified && (
+            <Button 
+              key="verify" 
+              type="primary" 
+              onClick={() => { handleVerify(previewCompany!.id); setPreviewCompany(null); }}
+              style={{ borderRadius: '8px' }}
+            >
+              Xác minh ngay
+            </Button>
+          )
+        ]}
+        width={700}
+        centered
+        bodyStyle={{ padding: 0 }}
+      >
+        {previewCompany && (
+          <div style={{ overflow: 'hidden', borderRadius: '12px' }}>
+            {/* Header / Cover Placeholder */}
+            <div style={{ height: '140px', background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', position: 'relative' }}>
+              <div style={{ position: 'absolute', bottom: '-40px', left: '24px', padding: '4px', background: '#white', borderRadius: '16px' }}>
+                <Avatar 
+                  src={previewCompany.logo ? (previewCompany.logo.startsWith('http') ? previewCompany.logo : `/images/${previewCompany.logo}`) : undefined}
+                  shape="square" 
+                  size={100} 
+                  style={{ borderRadius: '12px', border: '4px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                >
+                  {previewCompany.name.charAt(0)}
+                </Avatar>
+              </div>
+            </div>
+
+            <div style={{ padding: '60px 24px 24px' }}>
+              <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                <div>
+                  <Title level={3} style={{ margin: 0, fontWeight: 800 }}>{previewCompany.name}</Title>
+                  <Space split={<Divider type="vertical" />} style={{ marginTop: 4 }}>
+                    {previewCompany.isVerified ? (
+                      <Tag color="success" style={{ margin: 0 }}>Đã xác minh</Tag>
+                    ) : (
+                      <Tag color="default" style={{ margin: 0 }}>Chưa xác minh</Tag>
+                    )}
+                    <Text type="secondary"><GlobalOutlined /> {previewCompany.website || 'Chưa có website'}</Text>
+                  </Space>
+                </div>
+
+                <Divider style={{ margin: '8px 0' }} />
+
+                <Descriptions column={1} size="small">
+                  <Descriptions.Item label={<Text strong><EnvironmentOutlined /> Địa chỉ</Text>}>
+                    {previewCompany.address || 'N/A'}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={<Text strong><LinkOutlined /> Website</Text>}>
+                    {previewCompany.website ? (
+                      <a href={previewCompany.website} target="_blank" rel="noopener noreferrer">{previewCompany.website}</a>
+                    ) : 'N/A'}
+                  </Descriptions.Item>
+                </Descriptions>
+
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                  <Text strong style={{ display: 'block', marginBottom: 8 }}><InfoCircleOutlined /> Giới thiệu công ty</Text>
+                  <Paragraph style={{ margin: 0, color: '#475569' }}>
+                    {previewCompany.description || 'Công ty này chưa cập nhật thông tin giới thiệu.'}
+                  </Paragraph>
+                </div>
+              </Space>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

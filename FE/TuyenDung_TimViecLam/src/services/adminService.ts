@@ -23,6 +23,7 @@ export interface AdminCompany {
   website?: string;
   address?: string;
   email?: string;
+  description?: string;
   isVerified: boolean;
   createdAt: string;
 }
