@@ -11,7 +11,7 @@ import {
 } from '@ant-design/icons';
 import { verifyCompanyAdmin, type AdminCompany } from '../../services/adminService';
 import type { ColumnsType } from 'antd/es/table';
-import { message, App } from 'antd';
+import { App } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -119,30 +119,30 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
       render: (_, record) => (
         <Space>
           <Tooltip title="Xem hồ sơ công ty">
-            <Button 
-              size="small" 
-              icon={<EyeOutlined />} 
-              shape="circle" 
+            <Button
+              size="small"
+              icon={<EyeOutlined />}
+              shape="circle"
               onClick={() => setPreviewCompany(record)}
             />
           </Tooltip>
           {!record.isVerified && (
             <Button
-                type="primary"
-                size="small"
-                loading={isUpdating === record.id}
-                style={{ fontSize: '12px', borderRadius: '6px' }}
-                onClick={() => {
-                    modal.confirm({
-                        title: 'Xác minh công ty',
-                        content: 'Bạn có chắc chắn muốn xác minh công ty này?',
-                        okText: 'Xác minh',
-                        cancelText: 'Hủy',
-                        onOk: () => handleVerify(record.id)
-                    });
-                }}
+              type="primary"
+              size="small"
+              loading={isUpdating === record.id}
+              style={{ fontSize: '12px', borderRadius: '6px' }}
+              onClick={() => {
+                modal.confirm({
+                  title: 'Xác minh công ty',
+                  content: 'Bạn có chắc chắn muốn xác minh công ty này?',
+                  okText: 'Xác minh',
+                  cancelText: 'Hủy',
+                  onOk: () => handleVerify(record.id)
+                });
+              }}
             >
-                Xác minh
+              Xác minh
             </Button>
           )}
         </Space>
@@ -194,9 +194,9 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
             Đóng
           </Button>,
           !previewCompany?.isVerified && (
-            <Button 
-              key="verify" 
-              type="primary" 
+            <Button
+              key="verify"
+              type="primary"
               onClick={() => { handleVerify(previewCompany!.id); setPreviewCompany(null); }}
               style={{ borderRadius: '8px' }}
             >
@@ -213,10 +213,10 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
             {/* Header / Cover Placeholder */}
             <div style={{ height: '140px', background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', position: 'relative' }}>
               <div style={{ position: 'absolute', bottom: '-40px', left: '24px', padding: '4px', background: '#white', borderRadius: '16px' }}>
-                <Avatar 
+                <Avatar
                   src={previewCompany.logo ? (previewCompany.logo.startsWith('http') ? previewCompany.logo : `/images/${previewCompany.logo}`) : undefined}
-                  shape="square" 
-                  size={100} 
+                  shape="square"
+                  size={100}
                   style={{ borderRadius: '12px', border: '4px solid white', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                 >
                   {previewCompany.name.charAt(0)}

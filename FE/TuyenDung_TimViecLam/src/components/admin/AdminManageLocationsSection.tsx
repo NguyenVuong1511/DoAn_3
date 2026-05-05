@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Space, Card, App } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { getAllLocationsAdmin, addLocationAdmin, updateLocationAdmin, deleteLocationAdmin } from '../../services/adminService';
@@ -98,14 +98,14 @@ const AdminManageLocationsSection = () => {
             key: 'action',
             render: (_: any, record: any) => (
                 <Space size="middle">
-                    <Button 
-                        type="text" 
-                        icon={<EditOutlined className="text-blue-500" />} 
+                    <Button
+                        type="text"
+                        icon={<EditOutlined className="text-blue-500" />}
                         onClick={() => showModal(record)}
                     />
-                    <Button 
-                        type="text" 
-                        icon={<DeleteOutlined className="text-red-500" />} 
+                    <Button
+                        type="text"
+                        icon={<DeleteOutlined className="text-red-500" />}
                         onClick={() => {
                             modal.confirm({
                                 title: 'Xác nhận xóa',
@@ -129,9 +129,9 @@ const AdminManageLocationsSection = () => {
                     <h2 className="text-2xl font-black text-gray-900">Quản lý địa điểm</h2>
                     <p className="text-gray-500 font-medium">Quản lý danh sách các tỉnh thành, khu vực tuyển dụng</p>
                 </div>
-                <Button 
-                    type="primary" 
-                    icon={<PlusOutlined />} 
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
                     onClick={() => showModal()}
                     className="h-10 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 border-none font-bold shadow-lg shadow-indigo-600/20"
                 >
@@ -140,9 +140,9 @@ const AdminManageLocationsSection = () => {
             </div>
 
             <Card className="rounded-2xl border-none shadow-sm overflow-hidden">
-                <Table 
-                    columns={columns} 
-                    dataSource={locations} 
+                <Table
+                    columns={columns}
+                    dataSource={locations}
                     loading={loading}
                     rowKey="id"
                     pagination={{ pageSize: 10 }}

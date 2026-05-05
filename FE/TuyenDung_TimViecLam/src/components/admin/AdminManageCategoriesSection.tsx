@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Table, Button, Modal, Form, Input, Space, Card, Select, App } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import * as LucideIcons from 'lucide-react';
@@ -10,10 +10,10 @@ const { Option } = Select;
 const ALL_LUCIDE_ICONS = Object.keys(LucideIcons).filter(
     key => {
         const item = (LucideIcons as any)[key];
-        return (typeof item === 'function' || (typeof item === 'object' && item !== null)) && 
-               /^[A-Z]/.test(key) && 
-               key !== 'createLucideIcon' &&
-               key !== 'Lucide';
+        return (typeof item === 'function' || (typeof item === 'object' && item !== null)) &&
+            /^[A-Z]/.test(key) &&
+            key !== 'createLucideIcon' &&
+            key !== 'Lucide';
     }
 );
 
@@ -143,7 +143,7 @@ const AdminManageCategoriesSection = () => {
 
     const filteredIcons = useMemo(() => {
         const search = iconSearchTerm.trim().toLowerCase();
-        return ALL_LUCIDE_ICONS.filter(name => 
+        return ALL_LUCIDE_ICONS.filter(name =>
             name.toLowerCase().includes(search)
         ).slice(0, 120);
     }, [iconSearchTerm]);
@@ -342,7 +342,7 @@ const AdminManageCategoriesSection = () => {
 
                         <div className="flex flex-col gap-4">
                             <label className="font-bold text-gray-700">Chọn biểu tượng (Lucide)</label>
-                            <Input 
+                            <Input
                                 prefix={<SearchOutlined className="text-gray-400" />}
                                 placeholder="Tìm kiếm icon..."
                                 className="h-11 rounded-xl"
@@ -357,17 +357,16 @@ const AdminManageCategoriesSection = () => {
                             <div className="bg-slate-50 rounded-[24px] p-4 border border-slate-100 min-h-[300px]">
                                 <div className="grid grid-cols-5 gap-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
                                     {filteredIcons.map(icon => (
-                                        <div 
+                                        <div
                                             key={icon}
                                             onClick={() => {
                                                 setSelectedIcon(icon);
                                                 form.setFieldsValue({ iconName: icon });
                                             }}
-                                            className={`aspect-square rounded-xl flex items-center justify-center cursor-pointer transition-all border-2 ${
-                                                selectedIcon === icon 
-                                                ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg scale-105' 
-                                                : 'bg-white border-white text-slate-500 hover:border-indigo-100 hover:bg-indigo-50'
-                                            }`}
+                                            className={`aspect-square rounded-xl flex items-center justify-center cursor-pointer transition-all border-2 ${selectedIcon === icon
+                                                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg scale-105'
+                                                    : 'bg-white border-white text-slate-500 hover:border-indigo-100 hover:bg-indigo-50'
+                                                }`}
                                         >
                                             {renderLucideIcon(icon, 24, selectedIcon === icon ? '#fff' : undefined)}
                                         </div>

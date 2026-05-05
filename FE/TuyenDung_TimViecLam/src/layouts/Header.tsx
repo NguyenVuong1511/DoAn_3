@@ -202,22 +202,6 @@ const Header = () => {
                             <LayoutDashboard size={16} />
                             Bảng điều khiển
                           </Link>
-                          <Link
-                            to="/recruiter/dashboard"
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            <History size={16} />
-                            Quản lý tin đăng
-                          </Link>
-                          <Link
-                            to="/recruiter/dashboard"
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            onClick={() => setShowDropdown(false)}
-                          >
-                            <Users size={16} />
-                            Quản lý ứng viên
-                          </Link>
                           <div className="h-px bg-gray-100 my-1"></div>
                         </>
                       )}
