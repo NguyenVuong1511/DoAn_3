@@ -10,11 +10,83 @@ namespace TuyenDung_TimViec.Controllers
     {
         private readonly IJobPostRepository _jobRepo;
         private readonly ICompanyRepository _companyRepo;
+        private readonly ICategoryRepository _categoryRepo;
+        private readonly ILocationRepository _locationRepo;
 
-        public AdminController(IJobPostRepository jobRepo, ICompanyRepository companyRepo)
+        public AdminController(IJobPostRepository jobRepo, ICompanyRepository companyRepo, ICategoryRepository categoryRepo, ILocationRepository locationRepo)
         {
             _jobRepo = jobRepo;
             _companyRepo = companyRepo;
+            _categoryRepo = categoryRepo;
+            _locationRepo = locationRepo;
+        }
+
+        // ─── CATEGORIES ─────────────────────────────────────────────────────────────
+
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetAllCategories()
+        {
+            var categories = await _categoryRepo.GetAllAsync();
+            return Ok(RepositoryResult<object>.Ok(categories, "Lấy danh sách danh mục thành công!"));
+        }
+
+        [HttpPost("categories")]
+        public async Task<IActionResult> AddCategory([FromBody] Category category)
+        {
+            var result = await _categoryRepo.AddAsync(category);
+            if (result) return Ok(RepositoryResult<object>.Ok(null, "Thêm danh mục thành công!"));
+            return BadRequest(RepositoryResult<object>.Fail("Không thể thêm danh mục."));
+        }
+
+        [HttpPut("categories/{id}")]
+        public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] Category category)
+        {
+            category.Id = id;
+            var result = await _categoryRepo.UpdateAsync(category);
+            if (result) return Ok(RepositoryResult<object>.Ok(null, "Cập nhật danh mục thành công!"));
+            return BadRequest(RepositoryResult<object>.Fail("Không thể cập nhật danh mục."));
+        }
+
+        [HttpDelete("categories/{id}")]
+        public async Task<IActionResult> DeleteCategory(Guid id)
+        {
+            var result = await _categoryRepo.DeleteAsync(id);
+            if (result) return Ok(RepositoryResult<object>.Ok(null, "Xóa danh mục thành công!"));
+            return BadRequest(RepositoryResult<object>.Fail("Không thể xóa danh mục."));
+        }
+
+        // ─── LOCATIONS ──────────────────────────────────────────────────────────────
+
+        [HttpGet("locations")]
+        public async Task<IActionResult> GetAllLocations()
+        {
+            var locations = await _locationRepo.GetAllAsync();
+            return Ok(RepositoryResult<object>.Ok(locations, "Lấy danh sách địa điểm thành công!"));
+        }
+
+        [HttpPost("locations")]
+        public async Task<IActionResult> AddLocation([FromBody] Location location)
+        {
+            var result = await _locationRepo.AddAsync(location);
+            if (result) return Ok(RepositoryResult<object>.Ok(null, "Thêm địa điểm thành công!"));
+            return BadRequest(RepositoryResult<object>.Fail("Không thể thêm địa điểm."));
+        }
+
+        [HttpPut("locations/{id}")]
+        public async Task<IActionResult> UpdateLocation(Guid id, [FromBody] Location location)
+        {
+            location.Id = id;
+            var result = await _locationRepo.UpdateAsync(location);
+            if (result) return Ok(RepositoryResult<object>.Ok(null, "Cập nhật địa điểm thành công!"));
+            return BadRequest(RepositoryResult<object>.Fail("Không thể cập nhật địa điểm."));
+        }
+
+        [HttpDelete("locations/{id}")]
+        public async Task<IActionResult> DeleteLocation(Guid id)
+        {
+            var result = await _locationRepo.DeleteAsync(id);
+            if (result) return Ok(RepositoryResult<object>.Ok(null, "Xóa địa điểm thành công!"));
+            return BadRequest(RepositoryResult<object>.Fail("Không thể xóa địa điểm."));
         }
 
         [HttpGet("dashboard/stats")]

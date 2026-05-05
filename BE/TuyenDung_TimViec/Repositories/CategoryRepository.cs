@@ -7,6 +7,9 @@ namespace TuyenDung_TimViec.Repositories
     public interface ICategoryRepository
     {
         Task<List<Category>> GetAllAsync(int? top = null);
+        Task<bool> AddAsync(Category category);
+        Task<bool> UpdateAsync(Category category);
+        Task<bool> DeleteAsync(Guid id);
     }
 
     public class CategoryRepository : ICategoryRepository
@@ -54,6 +57,59 @@ namespace TuyenDung_TimViec.Repositories
             }
 
             return categories;
+        }
+
+        public async Task<bool> AddAsync(Category category)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "INSERT INTO Categories (Id, Name, Icon, Color, BgColor) VALUES (@Id, @Name, @Icon, @Color, @BgColor)";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", Guid.NewGuid());
+                    command.Parameters.AddWithValue("@Name", category.Name);
+                    command.Parameters.AddWithValue("@Icon", (object)category.IconName ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Color", (object)category.Color ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@BgColor", (object)category.BgColor ?? DBNull.Value);
+
+                    await connection.OpenAsync();
+                    return await command.ExecuteNonQueryAsync() > 0;
+                }
+            }
+        }
+
+        public async Task<bool> UpdateAsync(Category category)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "UPDATE Categories SET Name = @Name, Icon = @Icon, Color = @Color, BgColor = @BgColor WHERE Id = @Id";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", category.Id);
+                    command.Parameters.AddWithValue("@Name", category.Name);
+                    command.Parameters.AddWithValue("@Icon", (object)category.IconName ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@Color", (object)category.Color ?? DBNull.Value);
+                    command.Parameters.AddWithValue("@BgColor", (object)category.BgColor ?? DBNull.Value);
+
+                    await connection.OpenAsync();
+                    return await command.ExecuteNonQueryAsync() > 0;
+                }
+            }
+        }
+
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                string query = "DELETE FROM Categories WHERE Id = @Id";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    await connection.OpenAsync();
+                    return await command.ExecuteNonQueryAsync() > 0;
+                }
+            }
         }
     }
 }

@@ -108,7 +108,10 @@ const OverviewSection = ({ jobs, allApplications, stats, onSwitchTab }: Overview
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {allApplications.slice(0, 5).map((app, idx) => (
+              {[...allApplications]
+                .sort((a, b) => new Date(b.applyDate || 0).getTime() - new Date(a.applyDate || 0).getTime())
+                .slice(0, 5)
+                .map((app, idx) => (
                 <tr key={app.id || idx} className="group hover:bg-slate-50/50 transition-colors">
                   <td className="py-6 px-4">
                     <div className="flex items-center gap-4">
@@ -276,11 +279,21 @@ const StatusBadge = ({ status }: { status: string }) => {
     'Pending': 'bg-amber-50 text-amber-600 border-amber-100',
     'Approved': 'bg-emerald-50 text-emerald-600 border-emerald-100',
     'Rejected': 'bg-rose-50 text-rose-600 border-rose-100',
+    'Interviewing': 'bg-blue-50 text-blue-600 border-blue-100',
+    'Hired': 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    'Closed': 'bg-slate-50 text-slate-500 border-slate-100',
   };
-  const labels: any = { 'Pending': 'Chờ duyệt', 'Approved': 'Đồng ý', 'Rejected': 'Từ chối' };
+  const labels: any = { 
+    'Pending': 'Chờ duyệt', 
+    'Approved': 'Đồng ý', 
+    'Rejected': 'Từ chối',
+    'Interviewing': 'Phỏng vấn',
+    'Hired': 'Đã tuyển',
+    'Closed': 'Đã đóng'
+  };
   return (
     <span className={`text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-wider border ${styles[status] || styles['Pending']}`}>
-      {labels[status] || labels['Pending']}
+      {labels[status] || status}
     </span>
   );
 };

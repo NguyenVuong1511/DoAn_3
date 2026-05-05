@@ -28,6 +28,8 @@ import AdminOverviewSection from '../components/admin/AdminOverviewSection';
 import AdminManageJobsSection from '../components/admin/AdminManageJobsSection';
 import AdminManageCompaniesSection from '../components/admin/AdminManageCompaniesSection';
 import AdminManageUsersSection from '../components/admin/AdminManageUsersSection';
+import AdminManageCategoriesSection from '../components/admin/AdminManageCategoriesSection';
+import AdminManageLocationsSection from '../components/admin/AdminManageLocationsSection';
 
 const { Header, Content, Sider } = Layout;
 
@@ -108,6 +110,8 @@ const AdminDashboardPage = () => {
     { key: 'jobs', icon: <AppstoreOutlined />, label: 'Việc làm' },
     { key: 'companies', icon: <BankOutlined />, label: 'Công ty' },
     { key: 'users', icon: <TeamOutlined />, label: 'Người dùng' },
+    { key: 'categories', icon: <AppstoreOutlined />, label: 'Danh mục' },
+    { key: 'locations', icon: <SettingOutlined />, label: 'Địa điểm' },
     { type: 'divider' as const },
     { key: 'settings', icon: <SettingOutlined />, label: 'Cài đặt hệ thống' },
   ];
@@ -133,6 +137,8 @@ const AdminDashboardPage = () => {
     else if (activeTab === 'jobs') items.push({ title: 'Việc làm' });
     else if (activeTab === 'companies') items.push({ title: 'Công ty' });
     else if (activeTab === 'users') items.push({ title: 'Người dùng' });
+    else if (activeTab === 'categories') items.push({ title: 'Danh mục' });
+    else if (activeTab === 'locations') items.push({ title: 'Địa điểm' });
     else if (activeTab === 'settings') items.push({ title: 'Cài đặt' });
     return items;
   };
@@ -225,6 +231,8 @@ const AdminDashboardPage = () => {
               {activeTab === 'jobs' && <AdminManageJobsSection jobs={jobs} loading={loading} refreshData={fetchDashboardData} />}
               {activeTab === 'companies' && <AdminManageCompaniesSection companies={companies} loading={loading} refreshData={fetchDashboardData} />}
               {activeTab === 'users' && <AdminManageUsersSection users={users} loading={loading} refreshData={fetchDashboardData} />}
+              {activeTab === 'categories' && <AdminManageCategoriesSection />}
+              {activeTab === 'locations' && <AdminManageLocationsSection />}
               {activeTab === 'settings' && (
                 <div style={{ padding: '80px 0', textAlign: 'center' }}>
                   <SettingOutlined style={{ fontSize: '64px', color: '#e2e8f0', marginBottom: '24px' }} />

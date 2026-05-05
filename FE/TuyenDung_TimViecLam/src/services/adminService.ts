@@ -87,3 +87,66 @@ export async function getAdminStats(): Promise<ApiResponse<any>> {
     const { data } = await axiosInstance.get<ApiResponse<any>>('/admin/dashboard/stats');
     return data;
 }
+/**
+ * Lấy danh sách toàn bộ danh mục cho Admin
+ */
+export async function getAllCategoriesAdmin(): Promise<ApiResponse<any[]>> {
+    const { data } = await axiosInstance.get<ApiResponse<any[]>>('/admin/categories');
+    return data;
+}
+
+/**
+ * Thêm danh mục mới
+ */
+export async function addCategoryAdmin(category: any): Promise<ApiResponse<boolean>> {
+    const { data } = await axiosInstance.post<ApiResponse<boolean>>('/admin/categories', category);
+    return data;
+}
+
+/**
+ * Cập nhật danh mục
+ */
+export async function updateCategoryAdmin(id: string, category: any): Promise<ApiResponse<boolean>> {
+    const { data } = await axiosInstance.put<ApiResponse<boolean>>(`/admin/categories/${id}`, category);
+    return data;
+}
+
+/**
+ * Xóa danh mục
+ */
+export async function deleteCategoryAdmin(id: string): Promise<ApiResponse<boolean>> {
+    const { data } = await axiosInstance.delete<ApiResponse<boolean>>(`/admin/categories/${id}`);
+    return data;
+}
+
+/**
+ * Lấy danh sách toàn bộ địa điểm cho Admin
+ */
+export async function getAllLocationsAdmin(): Promise<ApiResponse<any[]>> {
+    const { data } = await axiosInstance.get<ApiResponse<any[]>>('/admin/locations');
+    return data;
+}
+
+/**
+ * Thêm địa điểm mới
+ */
+export async function addLocationAdmin(location: any): Promise<ApiResponse<boolean>> {
+    const { data } = await axiosInstance.post<ApiResponse<boolean>>('/admin/locations', location);
+    return data;
+}
+
+/**
+ * Cập nhật địa điểm
+ */
+export async function updateLocationAdmin(id: string, location: any): Promise<ApiResponse<boolean>> {
+    const { data } = await axiosInstance.put<ApiResponse<boolean>>(`/admin/locations/${id}`, location);
+    return data;
+}
+
+/**
+ * Xóa địa điểm
+ */
+export async function deleteLocationAdmin(id: string): Promise<ApiResponse<boolean>> {
+    const { data } = await axiosInstance.delete<ApiResponse<boolean>>(`/admin/locations/${id}`);
+    return data;
+}
