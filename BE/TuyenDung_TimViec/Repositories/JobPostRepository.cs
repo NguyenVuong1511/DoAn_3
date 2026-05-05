@@ -77,7 +77,8 @@ namespace TuyenDung_TimViec.Repositories
                 SELECT TOP (@count) jp.*, 
                        c.Name as CompanyName, c.Logo as CompanyLogo, 
                        l.Name as LocationName, jt.Name as JobTypeName,
-                       jl.Name as LevelName, el.Name as ExperienceName
+                       jl.Name as LevelName, el.Name as ExperienceName,
+                       (SELECT (SELECT COUNT(*) FROM Applications WHERE JobPostId = jp.Id) + (SELECT COUNT(*) FROM SavedJobs WHERE JobPostId = jp.Id)) as ApplicationCount
                 FROM JobPosts jp
                 LEFT JOIN Companies c ON jp.CompanyId = c.Id
                 LEFT JOIN Locations l ON jp.LocationId = l.Id
@@ -185,7 +186,8 @@ namespace TuyenDung_TimViec.Repositories
                 SELECT jp.*, 
                        c.Name as CompanyName, c.Logo as CompanyLogo, 
                        l.Name as LocationName, jt.Name as JobTypeName,
-                       jl.Name as LevelName, el.Name as ExperienceName
+                       jl.Name as LevelName, el.Name as ExperienceName,
+                       (SELECT (SELECT COUNT(*) FROM Applications WHERE JobPostId = jp.Id) + (SELECT COUNT(*) FROM SavedJobs WHERE JobPostId = jp.Id)) as ApplicationCount
                 FROM JobPosts jp
                 LEFT JOIN Companies c ON jp.CompanyId = c.Id
                 LEFT JOIN Locations l ON jp.LocationId = l.Id
@@ -236,7 +238,8 @@ namespace TuyenDung_TimViec.Repositories
                 SELECT jp.*, 
                        c.Name as CompanyName, c.Logo as CompanyLogo, 
                        l.Name as LocationName, jt.Name as JobTypeName,
-                       jl.Name as LevelName, el.Name as ExperienceName
+                       jl.Name as LevelName, el.Name as ExperienceName,
+                       (SELECT (SELECT COUNT(*) FROM Applications WHERE JobPostId = jp.Id) + (SELECT COUNT(*) FROM SavedJobs WHERE JobPostId = jp.Id)) as ApplicationCount
                 FROM JobPosts jp
                 LEFT JOIN Companies c ON jp.CompanyId = c.Id
                 LEFT JOIN Locations l ON jp.LocationId = l.Id
@@ -270,7 +273,8 @@ namespace TuyenDung_TimViec.Repositories
                 SELECT jp.*, 
                        c.Name as CompanyName, c.Logo as CompanyLogo, 
                        l.Name as LocationName, jt.Name as JobTypeName,
-                       jl.Name as LevelName, el.Name as ExperienceName
+                       jl.Name as LevelName, el.Name as ExperienceName,
+                       (SELECT (SELECT COUNT(*) FROM Applications WHERE JobPostId = jp.Id) + (SELECT COUNT(*) FROM SavedJobs WHERE JobPostId = jp.Id)) as ApplicationCount
                 FROM JobPosts jp
                 LEFT JOIN Companies c ON jp.CompanyId = c.Id
                 LEFT JOIN Locations l ON jp.LocationId = l.Id
@@ -325,7 +329,8 @@ namespace TuyenDung_TimViec.Repositories
                 LocationName = reader.IsDBNull(reader.GetOrdinal("LocationName")) ? string.Empty : reader.GetString(reader.GetOrdinal("LocationName")),
                 JobTypeName = reader.IsDBNull(reader.GetOrdinal("JobTypeName")) ? string.Empty : reader.GetString(reader.GetOrdinal("JobTypeName")),
                 LevelName = reader.IsDBNull(reader.GetOrdinal("LevelName")) ? string.Empty : reader.GetString(reader.GetOrdinal("LevelName")),
-                ExperienceName = reader.IsDBNull(reader.GetOrdinal("ExperienceName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ExperienceName"))
+                ExperienceName = reader.IsDBNull(reader.GetOrdinal("ExperienceName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ExperienceName")),
+                ApplicationCount = reader.IsDBNull(reader.GetOrdinal("ApplicationCount")) ? 0 : reader.GetInt32(reader.GetOrdinal("ApplicationCount"))
             };
         }
 
@@ -431,13 +436,33 @@ namespace TuyenDung_TimViec.Repositories
         {
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                string query = "DELETE FROM JobPosts WHERE Id = @Id";
-                using (SqlCommand command = new SqlCommand(query, connection))
+                await connection.OpenAsync();
+                
+                // Try hard delete first
+                string deleteQuery = "DELETE FROM JobPosts WHERE Id = @Id";
+                using (SqlCommand command = new SqlCommand(deleteQuery, connection))
                 {
                     command.Parameters.AddWithValue("@Id", id);
-                    await connection.OpenAsync();
-                    int result = await command.ExecuteNonQueryAsync();
-                    return result > 0;
+                    try
+                    {
+                        int result = await command.ExecuteNonQueryAsync();
+                        return result > 0;
+                    }
+                    catch (SqlException ex) when (ex.Number == 547) // Foreign key constraint violation
+                    {
+                        // Switch to soft delete (Inactive status)
+                        string updateQuery = "UPDATE JobPosts SET Status = 'Inactive' WHERE Id = @Id";
+                        using (SqlCommand updateCmd = new SqlCommand(updateQuery, connection))
+                        {
+                            updateCmd.Parameters.AddWithValue("@Id", id);
+                            int updateResult = await updateCmd.ExecuteNonQueryAsync();
+                            return updateResult > 0;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        return false;
+                    }
                 }
             }
         }

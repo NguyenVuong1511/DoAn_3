@@ -23,6 +23,7 @@ export interface Job {
     jobTypeName: string;
     levelName: string;
     experienceName: string;
+    applicationCount: number;
 }
 
 export interface JobResponse {

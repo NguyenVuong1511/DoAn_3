@@ -103,6 +103,8 @@ const JobDetailPage = () => {
     setIsModalOpen(true);
   };
 
+  const isClosed = job?.status !== 'Active';
+
   const handleApplySuccess = () => {
     setIsApplied(true);
   };
@@ -214,7 +216,14 @@ const JobDetailPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3">
+                {isClosed && (
+                  <div className="px-6 py-3 bg-rose-500/20 border border-rose-500/30 rounded-2xl flex items-center gap-3 text-rose-300 mb-2">
+                    <AlertCircle size={20} />
+                    <span className="font-bold text-sm">Tin tuyển dụng này đã ngừng nhận hồ sơ</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
                 <button
                   onClick={handleToggleSave}
                   disabled={saving}
@@ -227,10 +236,12 @@ const JobDetailPage = () => {
                 </button>
                 <button
                   onClick={handleApplyClick}
-                  disabled={isApplied || checkingApplication}
+                  disabled={isApplied || checkingApplication || isClosed}
                   className={`flex-1 lg:flex-none px-10 h-14 rounded-2xl font-black text-lg transition-all shadow-xl flex items-center justify-center gap-3 group ${isApplied
                     ? 'bg-emerald-500 text-white shadow-emerald-500/30 cursor-default'
-                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/30 cursor-pointer'
+                    : isClosed
+                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-80'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/30 cursor-pointer'
                     }`}
                 >
                   {checkingApplication ? (
@@ -240,6 +251,11 @@ const JobDetailPage = () => {
                       <CheckCircle2 size={20} />
                       Đã ứng tuyển
                     </>
+                  ) : isClosed ? (
+                    <>
+                      <AlertCircle size={20} />
+                      Ngừng nhận hồ sơ
+                    </>
                   ) : (
                     <>
                       Ứng tuyển ngay
@@ -248,6 +264,7 @@ const JobDetailPage = () => {
                   )}
                 </button>
               </div>
+            </div>
             </div>
           </div>
         </div>

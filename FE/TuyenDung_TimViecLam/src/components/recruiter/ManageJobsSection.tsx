@@ -45,15 +45,30 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
     }
   };
 
-  const handleDeleteJob = async (jobId: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa tin tuyển dụng này không?')) {
+  const handleDeleteJob = async (jobId: string, title: string) => {
+    const appCount = allApplications.filter(app => app.jobPostId === jobId).length;
+
+    if (appCount > 0) {
+      if (window.confirm(`Tin "${title}" đã có ${appCount} người ứng tuyển. Bạn không thể xóa vĩnh viễn tin này để bảo toàn dữ liệu ứng tuyển.\n\nBạn có muốn ẨN tin này đi thay thế không?`)) {
+        await handleToggleStatus(jobId);
+      }
+      return;
+    }
+
+    if (window.confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn tin "${title}" không?`)) {
       try {
         const res = await deleteJobApi(jobId);
         if (res.success) {
           (refreshData as any)(true);
+        } else {
+          if (window.confirm('Không thể xóa vĩnh viễn do ràng buộc dữ liệu. Bạn có muốn ẨN tin này đi không?')) {
+            await handleToggleStatus(jobId);
+          }
         }
       } catch (error) {
-        console.error("Delete job error:", error);
+        if (window.confirm('Có lỗi xảy ra khi xóa (có thể do ràng buộc dữ liệu). Bạn có muốn ẨN tin này đi không?')) {
+          await handleToggleStatus(jobId);
+        }
       }
     }
   };
@@ -212,7 +227,7 @@ const ManageJobsSection = ({ jobs, allApplications, refreshData, onOpenPostJob, 
                           <Edit size={18} />
                         </button>
                         <button
-                          onClick={() => job.status !== 'Rejected' && handleDeleteJob(job.id)}
+                          onClick={() => job.status !== 'Rejected' && handleDeleteJob(job.id, job.title)}
                           disabled={job.status === 'Rejected' || job.status === 'Pending'}
                           className={`w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-transparent transition-all ${
                             job.status === 'Rejected' || job.status === 'Pending'

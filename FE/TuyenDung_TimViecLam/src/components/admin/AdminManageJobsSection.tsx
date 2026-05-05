@@ -16,6 +16,8 @@ import {
   TeamOutlined
 } from '@ant-design/icons';
 import { toggleJobStatusAdmin } from '../../services/adminService';
+import { deleteJobApi } from '../../services/jobService';
+import { DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 
 const { Title, Text } = Typography;
@@ -50,6 +52,48 @@ const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, l
     } finally {
       setIsUpdating(null);
     }
+  };
+
+  const handleDelete = (job: any) => {
+    modal.confirm({
+      title: 'Xác nhận xóa tin tuyển dụng',
+      content: (
+        <div>
+          <p>Bạn có chắc chắn muốn xóa tin <b>{job.title}</b>?</p>
+          {job.applicationCount > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <Text type="danger" strong>Lưu ý: Tin này đã có {job.applicationCount} ứng viên.</Text>
+              <p style={{ fontSize: '12px', color: '#64748b', marginTop: 4 }}>
+                Hệ thống sẽ chuyển sang trạng thái <b>Ẩn</b> thay vì xóa vĩnh viễn để bảo toàn dữ liệu ứng tuyển của ứng viên.
+              </p>
+            </div>
+          )}
+        </div>
+      ),
+      okText: 'Xác nhận',
+      cancelText: 'Hủy',
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          if (job.applicationCount > 0) {
+            await handleToggleStatus(job.id, 'reject');
+            message.info("Tin đã được chuyển sang trạng thái Ẩn.");
+          } else {
+            const res = await deleteJobApi(job.id);
+            if (res.success) {
+              message.success("Đã xóa tin tuyển dụng thành công!");
+              refreshData();
+            } else {
+              await handleToggleStatus(job.id, 'reject');
+              message.warning("Đã ẩn tin tuyển dụng (không thể xóa do ràng buộc dữ liệu).");
+            }
+          }
+        } catch (error) {
+          await handleToggleStatus(job.id, 'reject');
+          message.error("Lỗi khi xóa, hệ thống đã chuyển tin sang trạng thái Ẩn.");
+        }
+      }
+    });
   };
 
   const filteredJobs = jobs.filter(job => {
@@ -99,6 +143,18 @@ const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, l
       dataIndex: 'companyName',
       key: 'companyName',
       render: (text) => <Text strong style={{ color: '#475569' }}>{text || 'N/A'}</Text>,
+    },
+    {
+        title: 'Ứng tuyển',
+        dataIndex: 'applicationCount',
+        key: 'applicationCount',
+        width: 100,
+        align: 'center',
+        render: (count) => (
+          <Tag color={count > 0 ? 'blue' : 'default'} style={{ borderRadius: '12px', fontWeight: 700 }}>
+            {count || 0}
+          </Tag>
+        ),
     },
     {
       title: 'Trạng thái',
@@ -219,25 +275,36 @@ const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, l
             )}
 
             {isRejected && (
-              <Button
-                type="primary"
-                size="small"
+              <Button 
+                type="primary" 
+                size="small" 
                 icon={<CheckCircleOutlined />}
                 loading={isUpdating === record.id}
                 style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
                 onClick={() => {
-                  modal.confirm({
-                    title: 'Duyệt lại bài đăng',
-                    content: 'Bạn có chắc chắn muốn duyệt lại bài đăng này?',
-                    okText: 'Duyệt lại',
-                    cancelText: 'Hủy',
-                    onOk: () => handleToggleStatus(record.id, 'approve')
-                  });
+                    modal.confirm({
+                        title: 'Duyệt lại bài đăng',
+                        content: 'Bạn có chắc chắn muốn duyệt lại bài đăng này?',
+                        okText: 'Duyệt lại',
+                        cancelText: 'Hủy',
+                        onOk: () => handleToggleStatus(record.id, 'approve')
+                    });
                 }}
               >
                 Duyệt lại
               </Button>
             )}
+
+            <Tooltip title="Xóa tin tuyển dụng">
+              <Button 
+                danger
+                type="text"
+                size="small" 
+                icon={<DeleteOutlined />} 
+                shape="circle" 
+                onClick={() => handleDelete(record)}
+              />
+            </Tooltip>
           </Space>
         );
       },

@@ -30,5 +30,6 @@ namespace TuyenDung_TimViec.Models
         public string? JobTypeName { get; set; }
         public string? ExperienceName { get; set; }
         public string? LevelName { get; set; }
+        public int ApplicationCount { get; set; }
     }
 }
