@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Table, Input, Tag, Select, Space, Button, Popconfirm, message, Avatar, Typography, Tooltip } from 'antd';
-import { 
-  SearchOutlined, 
-  FilterOutlined, 
-  UserOutlined, 
-  LockOutlined, 
-  UnlockOutlined, 
+import { Table, Input, Tag, Select, Space, Button, Popconfirm, message, Avatar, Typography } from 'antd';
+import {
+  SearchOutlined,
+  FilterOutlined,
+  UserOutlined,
+  LockOutlined,
+  UnlockOutlined,
   CrownOutlined,
   MailOutlined,
   MoreOutlined,
@@ -60,16 +60,16 @@ const AdminManageUsersSection: React.FC<AdminManageUsersSectionProps> = ({ users
       width: '35%',
       render: (_, record) => (
         <Space size={12}>
-          <Avatar 
+          <Avatar
             src={
-              record.avatar 
+              record.avatar
                 ? (record.avatar.startsWith('http') ? record.avatar : `/images/avatar/${record.avatar}`)
-                : (record.companyLogo 
+                : (record.companyLogo
                   ? (record.companyLogo.startsWith('http') ? record.companyLogo : `/images/${record.companyLogo}`)
                   : `https://api.dicebear.com/7.x/avataaars/svg?seed=${record.email}`)
             }
             size={44}
-            style={{ 
+            style={{
               backgroundColor: record.role === 'ADMIN' ? '#e9d5ff' : '#dbeafe',
               color: record.role === 'ADMIN' ? '#7e22ce' : '#2563eb',
               border: '2px solid #fff',
@@ -108,8 +108,8 @@ const AdminManageUsersSection: React.FC<AdminManageUsersSectionProps> = ({ users
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
-        <Tag 
-          color={status === 'ACTIVE' ? 'success' : 'error'} 
+        <Tag
+          color={status === 'ACTIVE' ? 'success' : 'error'}
           style={{ borderRadius: '20px', padding: '0 12px', fontWeight: 600 }}
         >
           {status === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}
@@ -143,9 +143,9 @@ const AdminManageUsersSection: React.FC<AdminManageUsersSectionProps> = ({ users
               okButtonProps={{ danger: record.status === 'ACTIVE' }}
             >
               {record.status === 'ACTIVE' ? (
-                <Button 
-                  danger 
-                  size="small" 
+                <Button
+                  danger
+                  size="small"
                   icon={<LockOutlined />}
                   loading={isUpdating === record.id}
                   style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
@@ -153,9 +153,9 @@ const AdminManageUsersSection: React.FC<AdminManageUsersSectionProps> = ({ users
                   Khóa
                 </Button>
               ) : (
-                <Button 
-                  type="primary" 
-                  size="small" 
+                <Button
+                  type="primary"
+                  size="small"
                   icon={<UnlockOutlined />}
                   loading={isUpdating === record.id}
                   style={{ borderRadius: '6px', fontSize: '12px', fontWeight: 600 }}
@@ -177,20 +177,20 @@ const AdminManageUsersSection: React.FC<AdminManageUsersSectionProps> = ({ users
         <Title level={4} style={{ margin: 0, fontWeight: 800 }}>Quản lý Tài khoản</Title>
         <Text type="secondary">Quản lý quyền truy cập và trạng thái hoạt động của thành viên hệ thống.</Text>
       </div>
-      
+
       <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '24px', border: '1px solid #f1f5f9' }}>
         <Space wrap size={16}>
-          <Input 
-            placeholder="Tìm theo email, tên, công ty..." 
-            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />} 
+          <Input
+            placeholder="Tìm theo email, tên, công ty..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: 300, borderRadius: '8px' }}
             allowClear
           />
-          <Select 
-            value={roleFilter} 
-            onChange={setRoleFilter} 
+          <Select
+            value={roleFilter}
+            onChange={setRoleFilter}
             style={{ width: 180 }}
             suffixIcon={<FilterOutlined />}
           >
@@ -202,12 +202,12 @@ const AdminManageUsersSection: React.FC<AdminManageUsersSectionProps> = ({ users
         </Space>
       </div>
 
-      <Table 
-        columns={columns} 
-        dataSource={filteredUsers} 
-        rowKey="id" 
+      <Table
+        columns={columns}
+        dataSource={filteredUsers}
+        rowKey="id"
         loading={loading}
-        pagination={{ 
+        pagination={{
           pageSize: 10,
           showSizeChanger: true,
           style: { marginTop: '24px' }

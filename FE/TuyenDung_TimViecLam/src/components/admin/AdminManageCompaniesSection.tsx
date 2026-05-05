@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Table, Input, Tag, Avatar, Space, Typography, Button, Tooltip } from 'antd';
-import { 
-  SearchOutlined, 
-  CheckCircleOutlined, 
-  GlobalOutlined, 
+import {
+  SearchOutlined,
+  GlobalOutlined,
   EnvironmentOutlined,
   EyeOutlined,
   VerifiedOutlined
@@ -42,7 +41,7 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
     }
   };
 
-  const filteredCompanies = companies.filter(company => 
+  const filteredCompanies = companies.filter(company =>
     company.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     company.address?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -55,9 +54,9 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
       width: '30%',
       render: (text, record) => (
         <Space size={12}>
-          <Avatar 
-            src={record.logo ? (record.logo.startsWith('http') ? record.logo : `/images/${record.logo}`) : undefined} 
-            shape="square" 
+          <Avatar
+            src={record.logo ? (record.logo.startsWith('http') ? record.logo : `/images/${record.logo}`) : undefined}
+            shape="square"
             size={48}
             style={{ borderRadius: '12px', border: '1px solid #f1f5f9' }}
           >
@@ -125,9 +124,9 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
               okText="Xác minh"
               cancelText="Hủy"
             >
-              <Button 
-                type="primary" 
-                size="small" 
+              <Button
+                type="primary"
+                size="small"
                 loading={isUpdating === record.id}
                 style={{ fontSize: '12px', borderRadius: '6px' }}
               >
@@ -146,12 +145,12 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
         <Title level={4} style={{ margin: 0, fontWeight: 800 }}>Quản lý Đối tác</Title>
         <Text type="secondary">Danh sách các doanh nghiệp và nhà tuyển dụng tham gia hệ thống.</Text>
       </div>
-      
+
       <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '24px', border: '1px solid #f1f5f9' }}>
         <Space>
-          <Input 
-            placeholder="Tìm theo tên công ty, địa chỉ..." 
-            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />} 
+          <Input
+            placeholder="Tìm theo tên công ty, địa chỉ..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: 350, borderRadius: '8px' }}
@@ -160,12 +159,12 @@ const AdminManageCompaniesSection: React.FC<AdminManageCompaniesSectionProps> = 
         </Space>
       </div>
 
-      <Table 
-        columns={columns} 
-        dataSource={filteredCompanies} 
-        rowKey="id" 
+      <Table
+        columns={columns}
+        dataSource={filteredCompanies}
+        rowKey="id"
         loading={loading}
-        pagination={{ 
+        pagination={{
           pageSize: 10,
           showSizeChanger: true,
           style: { marginTop: '24px' }

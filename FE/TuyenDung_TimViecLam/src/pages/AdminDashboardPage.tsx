@@ -9,14 +9,13 @@ import {
   type AdminUser,
   type AdminCompany
 } from '../services/adminService';
-import { Layout, Menu, theme, Avatar, Dropdown, Space, ConfigProvider, Breadcrumb, Button, message } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Space, ConfigProvider, Breadcrumb, Button, message } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   DashboardOutlined,
   AppstoreOutlined,
   TeamOutlined,
   BankOutlined,
-  UserOutlined,
   LogoutOutlined,
   SettingOutlined,
   MenuUnfoldOutlined,
@@ -115,15 +114,15 @@ const AdminDashboardPage = () => {
 
   const userMenuProps: MenuProps = {
     items: [
-      { 
-        key: '1', 
-        icon: <LogoutOutlined />, 
-        label: 'Đăng xuất', 
+      {
+        key: '1',
+        icon: <LogoutOutlined />,
+        label: 'Đăng xuất',
         onClick: () => {
           logout();
           message.success("Đã đăng xuất thành công!");
           navigate('/login');
-        } 
+        }
       },
     ],
   };

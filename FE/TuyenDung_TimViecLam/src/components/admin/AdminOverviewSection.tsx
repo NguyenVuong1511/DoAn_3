@@ -1,14 +1,13 @@
 import React from 'react';
 import { Row, Col, Card, Statistic, Button, Spin, Space, Typography, Tag, Avatar, Badge, Progress } from 'antd';
-import { 
-  AppstoreOutlined, 
-  BankOutlined, 
-  TeamOutlined, 
+import {
+  AppstoreOutlined,
+  BankOutlined,
+  TeamOutlined,
   WarningOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
   CloudServerOutlined,
-  DatabaseOutlined,
   SettingOutlined,
   UserOutlined,
   SafetyCertificateOutlined
@@ -34,9 +33,9 @@ interface AdminOverviewSectionProps {
   companies: AdminCompany[];
 }
 
-const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({ 
-  stats, 
-  loading, 
+const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
+  stats,
+  loading,
   onSwitchTab,
   jobs,
   users,
@@ -95,9 +94,9 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
 
       <Row gutter={[24, 24]}>
         <Col xs={24} sm={12} lg={6}>
-          <Card 
-            hoverable 
-            style={cardStyles} 
+          <Card
+            hoverable
+            style={cardStyles}
             className="hover:-translate-y-1"
             styles={{ body: { padding: '24px' } }}
           >
@@ -112,9 +111,9 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
             <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Badge status="success" text={<Text type="secondary" style={{ fontSize: '12px' }}>{jobs.filter(j => j.status?.toLowerCase() === 'active' || j.status?.toLowerCase() === 'approved').length} đang hoạt động</Text>} />
             </div>
-            <Button 
-              type="text" 
-              onClick={() => onSwitchTab('jobs')} 
+            <Button
+              type="text"
+              onClick={() => onSwitchTab('jobs')}
               style={{ padding: 0, marginTop: 16, color: '#6366f1', fontWeight: 700 }}
               icon={<ArrowRightOutlined />}
             >
@@ -122,11 +121,11 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
             </Button>
           </Card>
         </Col>
-        
+
         <Col xs={24} sm={12} lg={6}>
-          <Card 
-            hoverable 
-            style={{ ...cardStyles, background: 'linear-gradient(135deg, #fff 0%, #fff1f2 100%)' }} 
+          <Card
+            hoverable
+            style={{ ...cardStyles, background: 'linear-gradient(135deg, #fff 0%, #fff1f2 100%)' }}
             className="hover:-translate-y-1"
             styles={{ body: { padding: '24px' } }}
           >
@@ -141,9 +140,9 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
             <div style={{ marginTop: 8 }}>
               <Text type="danger" style={{ fontSize: '12px', fontWeight: 600 }}>Cần xử lý ngay</Text>
             </div>
-            <Button 
-              type="text" 
-              onClick={() => onSwitchTab('jobs')} 
+            <Button
+              type="text"
+              onClick={() => onSwitchTab('jobs')}
               style={{ padding: 0, marginTop: 16, color: '#f43f5e', fontWeight: 700 }}
               icon={<ArrowRightOutlined />}
             >
@@ -153,9 +152,9 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card 
-            hoverable 
-            style={cardStyles} 
+          <Card
+            hoverable
+            style={cardStyles}
             className="hover:-translate-y-1"
             styles={{ body: { padding: '24px' } }}
           >
@@ -170,9 +169,9 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
             <div style={{ marginTop: 8 }}>
               <Text type="secondary" style={{ fontSize: '12px' }}>{companies.filter(c => c.isVerified).length} đã xác minh</Text>
             </div>
-            <Button 
-              type="text" 
-              onClick={() => onSwitchTab('companies')} 
+            <Button
+              type="text"
+              onClick={() => onSwitchTab('companies')}
               style={{ padding: 0, marginTop: 16, color: '#8b5cf6', fontWeight: 700 }}
               icon={<ArrowRightOutlined />}
             >
@@ -182,9 +181,9 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card 
-            hoverable 
-            style={cardStyles} 
+          <Card
+            hoverable
+            style={cardStyles}
             className="hover:-translate-y-1"
             styles={{ body: { padding: '24px' } }}
           >
@@ -199,9 +198,9 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
             <div style={{ marginTop: 8 }}>
               <Text type="secondary" style={{ fontSize: '12px' }}>{stats.lockedUsers} tài khoản bị khóa</Text>
             </div>
-            <Button 
-              type="text" 
-              onClick={() => onSwitchTab('users')} 
+            <Button
+              type="text"
+              onClick={() => onSwitchTab('users')}
               style={{ padding: 0, marginTop: 16, color: '#f59e0b', fontWeight: 700 }}
               icon={<ArrowRightOutlined />}
             >
@@ -214,8 +213,8 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         {/* Recent Jobs */}
         <Col xs={24} lg={12}>
-          <Card 
-            title={<Space><AppstoreOutlined style={{ color: '#6366f1' }} /><span>Tin tuyển dụng mới nhất</span></Space>} 
+          <Card
+            title={<Space><AppstoreOutlined style={{ color: '#6366f1' }} /><span>Tin tuyển dụng mới nhất</span></Space>}
             style={cardStyles}
             extra={<Button type="link" onClick={() => onSwitchTab('jobs')}>Tất cả</Button>}
           >
@@ -223,8 +222,8 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
               {recentJobs.length > 0 ? recentJobs.map((job) => (
                 <div key={job.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
                   <div style={{ display: 'flex', gap: '16px', alignItems: 'center', overflow: 'hidden' }}>
-                    <Avatar 
-                      src={job.companyLogo ? (job.companyLogo.startsWith('http') ? job.companyLogo : `/images/${job.companyLogo}`) : undefined} 
+                    <Avatar
+                      src={job.companyLogo ? (job.companyLogo.startsWith('http') ? job.companyLogo : `/images/${job.companyLogo}`) : undefined}
                       icon={<BankOutlined />}
                       style={{ backgroundColor: '#f8fafc', color: '#6366f1', flexShrink: 0 }}
                     />
@@ -246,8 +245,8 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
 
         {/* Recent Users */}
         <Col xs={24} lg={12}>
-          <Card 
-            title={<Space><TeamOutlined style={{ color: '#f59e0b' }} /><span>Người dùng mới gia nhập</span></Space>} 
+          <Card
+            title={<Space><TeamOutlined style={{ color: '#f59e0b' }} /><span>Người dùng mới gia nhập</span></Space>}
             style={cardStyles}
             extra={<Button type="link" onClick={() => onSwitchTab('users')}>Tất cả</Button>}
           >
@@ -255,20 +254,20 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
               {recentUsers.length > 0 ? recentUsers.map((user) => (
                 <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
                   <div style={{ display: 'flex', gap: '16px', alignItems: 'center', overflow: 'hidden' }}>
-                    <Avatar 
+                    <Avatar
                       src={
-                        user.avatar 
+                        user.avatar
                           ? (user.avatar.startsWith('http') ? user.avatar : `/images/avatar/${user.avatar}`)
-                          : (user.companyLogo 
+                          : (user.companyLogo
                             ? (user.companyLogo.startsWith('http') ? user.companyLogo : `/images/${user.companyLogo}`)
                             : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`)
                       }
-                      icon={<UserOutlined />} 
-                      style={{ 
-                        backgroundColor: user.role === 'RECRUITER' ? '#eff6ff' : '#f0fdf4', 
-                        color: user.role === 'RECRUITER' ? '#3b82f6' : '#22c55e', 
-                        flexShrink: 0 
-                      }} 
+                      icon={<UserOutlined />}
+                      style={{
+                        backgroundColor: user.role === 'RECRUITER' ? '#eff6ff' : '#f0fdf4',
+                        color: user.role === 'RECRUITER' ? '#3b82f6' : '#22c55e',
+                        flexShrink: 0
+                      }}
                     />
                     <div style={{ overflow: 'hidden' }}>
                       <div style={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.fullName || user.email}</div>
@@ -289,8 +288,8 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
 
       <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={16}>
-          <Card 
-            title={<Space><CloudServerOutlined style={{ color: '#10b981' }} /><span>Trạng thái & Hiệu năng hệ thống</span></Space>} 
+          <Card
+            title={<Space><CloudServerOutlined style={{ color: '#10b981' }} /><span>Trạng thái & Hiệu năng hệ thống</span></Space>}
             style={cardStyles}
             styles={{ header: { border: 'none', padding: '24px 24px 0' } }}
           >
@@ -343,54 +342,54 @@ const AdminOverviewSection: React.FC<AdminOverviewSectionProps> = ({
             </div>
           </Card>
         </Col>
-        
+
         <Col xs={24} lg={8}>
-          <Card 
+          <Card
             title={<Space><CheckCircleOutlined style={{ color: '#f59e0b' }} /><span>Hành động nhanh</span></Space>}
             style={cardStyles}
             styles={{ header: { border: 'none', padding: '24px 24px 0' } }}
           >
-             <Space orientation="vertical" style={{ width: '100%' }} size={12}>
-               <Button 
-                type="primary" 
-                block 
-                size="large" 
-                onClick={() => onSwitchTab('jobs')} 
+            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
+              <Button
+                type="primary"
+                block
+                size="large"
+                onClick={() => onSwitchTab('jobs')}
                 style={{ height: '52px', fontWeight: 700, borderRadius: '12px', background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)', border: 'none' }}
                 icon={<AppstoreOutlined />}
               >
-                 Duyệt Tin tuyển dụng
-               </Button>
-               <Button 
-                block 
-                size="large" 
-                onClick={() => onSwitchTab('users')} 
+                Duyệt Tin tuyển dụng
+              </Button>
+              <Button
+                block
+                size="large"
+                onClick={() => onSwitchTab('users')}
                 style={{ height: '52px', fontWeight: 700, borderRadius: '12px' }}
                 icon={<TeamOutlined />}
               >
-                 Quản lý Người dùng
-               </Button>
-               <Button 
-                block 
-                size="large" 
-                icon={<SettingOutlined />} 
+                Quản lý Người dùng
+              </Button>
+              <Button
+                block
+                size="large"
+                icon={<SettingOutlined />}
                 style={{ height: '52px', fontWeight: 700, borderRadius: '12px' }}
               >
-                 Cấu hình Hệ thống
-               </Button>
-               
-               <div style={{ marginTop: 12, padding: '16px', borderRadius: '12px', background: '#fffbeb', border: '1px solid #fef3c7' }}>
-                 <div style={{ display: 'flex', gap: '12px' }}>
-                   <WarningOutlined style={{ color: '#f59e0b', fontSize: '18px', marginTop: '2px' }} />
-                   <div>
-                     <Text strong style={{ color: '#92400e', fontSize: '13px' }}>Lời nhắc quản trị</Text>
-                     <div style={{ color: '#b45309', fontSize: '12px', marginTop: '4px' }}>
-                       Có {stats.pendingJobs} tin tuyển dụng đang chờ bạn phê duyệt từ hôm qua.
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </Space>
+                Cấu hình Hệ thống
+              </Button>
+
+              <div style={{ marginTop: 12, padding: '16px', borderRadius: '12px', background: '#fffbeb', border: '1px solid #fef3c7' }}>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <WarningOutlined style={{ color: '#f59e0b', fontSize: '18px', marginTop: '2px' }} />
+                  <div>
+                    <Text strong style={{ color: '#92400e', fontSize: '13px' }}>Lời nhắc quản trị</Text>
+                    <div style={{ color: '#b45309', fontSize: '12px', marginTop: '4px' }}>
+                      Có {stats.pendingJobs} tin tuyển dụng đang chờ bạn phê duyệt từ hôm qua.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Space>
           </Card>
         </Col>
       </Row>
