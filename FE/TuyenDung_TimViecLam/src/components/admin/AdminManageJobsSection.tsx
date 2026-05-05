@@ -46,11 +46,30 @@ const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, l
   };
 
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          job.companyName?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || job.status?.toLowerCase() === statusFilter.toLowerCase();
+    const title = job.title || '';
+    const company = job.companyName || '';
+    const status = job.status?.toLowerCase() || '';
+    
+    const matchesSearch = title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          company.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    let matchesStatus = true;
+    if (statusFilter !== 'All') {
+      const filter = statusFilter.toLowerCase();
+      if (filter === 'inactive') {
+        // Group inactive, expired, and rejected
+        matchesStatus = ['inactive', 'expired', 'rejected'].includes(status);
+      } else {
+        matchesStatus = status === filter;
+      }
+    }
+    
     return matchesSearch && matchesStatus;
   });
+
+  const sortedJobs = [...filteredJobs].sort((a, b) => 
+    new Date(b.postDate).getTime() - new Date(a.postDate).getTime()
+  );
 
   const columns: ColumnsType<any> = [
     {
@@ -231,15 +250,16 @@ const AdminManageJobsSection: React.FC<AdminManageJobsSectionProps> = ({ jobs, l
             <Option value="All">Tất cả trạng thái</Option>
             <Option value="Active">Đang hoạt động</Option>
             <Option value="Pending">Chờ phê duyệt</Option>
-            <Option value="Inactive">Đã khóa / Hết hạn</Option>
+            <Option value="Rejected">Bị từ chối</Option>
+            <Option value="Inactive">Đã ẩn / Hết hạn</Option>
           </Select>
-          <Text type="secondary" style={{ fontSize: '13px' }}>Hiển thị {filteredJobs.length} kết quả</Text>
+          <Text type="secondary" style={{ fontSize: '13px' }}>Hiển thị {sortedJobs.length} kết quả</Text>
         </Space>
       </div>
 
       <Table 
         columns={columns} 
-        dataSource={filteredJobs} 
+        dataSource={sortedJobs} 
         rowKey="id" 
         loading={loading}
         pagination={{ 
